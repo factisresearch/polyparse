@@ -58,7 +58,11 @@ instance Eq HType where
 --   variables occurring in the (second) list of real component types.
 --   If there are fieldnames, they are contained in the final list, and
 --   correspond one-to-one with the component types.
+--   The Synonym alternative is for where the type-mapping from Haskell to
+--   XML is user-defined rather than automatic.  There, one might wish to
+--   rename an existing XML type, without the addition of a constructor/tag.
 data Constr = Constr String [HType] [HType] -- (Maybe [String])
+            | Synonym HType
     deriving (Eq,Show)
 
 -- | Project the n'th constructor from an HType and convert it to a string
@@ -152,12 +156,14 @@ toDTD ht =
       | c `notElem` chist =
           [Element (ElementDecl (flatConstr c "") (ContentSpec (constrHtExpr c)))]
       | otherwise = [] 
+    declConstr _ (Synonym ht) = []
     declprim (Prim s t) =
       [ Element (ElementDecl t EMPTY)
       , AttList (AttListDecl t [AttDef "value" StringType REQUIRED])]
     declstring =
       Element (ElementDecl "string" (Mixed PCDATA))
     grab (Constr _ _ hts) = hts
+    grab (Synonym ht) = [ht]
 
 (?) :: Bool -> (a->a) -> (a->a)
 b ? f | b     = f
@@ -182,6 +188,7 @@ flatConstr :: Constr -> ShowS
 flatConstr (Constr s fv _)
         = showString s . ((length fv > 0) ? (showChar '-'))
           . foldr (.) id (intersperse (showChar '-') (map showHType fv))
+flatConstr (Synonym ht) = id
 
 outerHtExpr :: HType -> CP
 outerHtExpr (Maybe ht)      = innerHtExpr ht Query
@@ -201,5 +208,6 @@ innerHtExpr ht m = TagName (showHType ht "") m
 constrHtExpr :: Constr -> CP
 constrHtExpr (Constr s fv [])  = TagName "EMPTY" None   --  ***HACK!!!***
 constrHtExpr (Constr s fv hts) = innerHtExpr (Tuple hts) None
+constrHtExpr (Synonym ht)      = outerHtExpr ht
 
 ------------------------------------------------------------------------

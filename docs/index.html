@@ -204,13 +204,33 @@ to discuss your requirements.)
 <ul>
 <li>
 Parser combinators have a long history in Haskell.  The first(?) monadic
-set of combinators was introduced by Hutton and Meijer in 1994, and
-distributed with Gofer (a precursor to Hugs), and known simply as
-ParseLib.  That set lives on here as Text.ParserCombinator.HuttonMeijer.
+combinator tutorial was introduced by Hutton and Meijer in 1994, and the
+accompanying library was distributed with Gofer (a precursor to Hugs),
+and known simply as ParseLib.  That library lives on here as
+Text.ParserCombinators.HuttonMeijer.
+
 <li>Niklas Rojemo's combinators.
+The parser combinators developed and used in the implementation of the
+nhc98 compiler are monadic and space-efficient.  However, they do not
+use the standard do-notation, because in fact they are more general than
+the standard monad category.
+
 <li>Daan Leijen's parsec.
+The parsec library is widely used, since it is distributed with ghc.
+Its combinators are fairly robust, but you need to place explicit
+backtracking into your parsers, using the <tt>try</tt> operator.  This
+can be tricky.
+
 <li>Doaitse Swierstra's UU_Parse.
+An all-singing, all-dancing parsing library.  Deeply sophisticated.
+
 <li>Koen Claessen's ReadP.
+This is a different proposed replacement for the standard Haskell'98
+Read class.  It is a whole lot more efficient that Read, but because it
+is also API-compatible with Read, that unfortunately means it suffers
+from not giving good error messages.  Also, it requires rank-2 types,
+which is a non-Haskell'98 extension.
+
 </ul>
 
 <hr>

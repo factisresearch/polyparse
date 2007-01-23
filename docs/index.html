@@ -27,14 +27,14 @@
 <p>
 <b>polyparse</b> is a collection of parser combinator libraries in
 Haskell.  It is distributed as a package, but you are likely to use only
-one of the included variations at any one time - they are generally
+one of the included modules at any one time - they are generally
 alternatives to each other, as well as an alternative to other
 widely-used parser libraries available elsewhere.
 
 <ul>
-<li> <b>Text.ParserCombinators.HuttonMeijer</b>  The granddaddy of all
-     monadic parser combinator libraries, dating from 1996.  Originally
-     distributed with Gofer (a forerunner of Hugs) as ParseLib.  It uses
+<li> <b>Text.ParserCombinators.HuttonMeijer</b>  The most venerable of all
+     monadic parser combinator libraries, this version dates from 1996.
+     Originally distributed with Gofer, then Hugs, as ParseLib.  It uses
      the idea of "failure as a list of successes" to give multiple
      possible parses through backtracking.  (But in practice, almost
      nobody wants any parse except the first complete one.)
@@ -45,7 +45,7 @@ widely-used parser libraries available elsewhere.
      simple error-reporting.
 <li> <b>Text.ParserCombinators.Poly</b>
      The name Poly comes from the arbitrary token type.  Thus, you can
-     write your own lexer if you wish, rather than needing to code
+     write your own lexer if you wish, rather than needing to encode
      lexical analysis within the parser itself.  This is a fresh
      set of combinators, improving on the HuttonMeijer variety by
      keeping only a single success, not a list of them.  This is
@@ -60,7 +60,7 @@ widely-used parser libraries available elsewhere.
 <li> <b>Text.ParserCombinators.PolyState</b>  is just like Poly, except it
      adds an arbitrary running state parameter.
 <li> <b>Text.ParserCombinators.PolyLazy</b>  is just like Poly, except it
-     does not return explicit failure.  Instead, an exception is raised.
+     does not return explicit failures.  Instead, an exception is raised.
      Thus, it can return a partial parse result, before a full parse is
      complete.  The word partial indicates that, having committed to
      return some outer data constructor, we might later discover some
@@ -68,8 +68,8 @@ widely-used parser libraries available elsewhere.
      incomplete: containing bottom.  However, if you are confident that
      the input is error-free, then you will gain hugely in
      space-efficiency - essentially you can stream-process your parsed
-     data-structure within small constant space.  This is especially useful
-     for very large structures like e.g. XML trees.
+     data-structure within very small constant space.  This is especially
+     useful for large structures like e.g. XML trees.
 <li> <b>Text.ParserCombinators.PolyStateLazy</b>  combines PolyState and
      PolyLazy.
 <li> <b>Text.Parse</b>  The Text.Read class from Haskell'98 is widely
@@ -82,7 +82,7 @@ widely-used parser libraries available elsewhere.
      enable the construction of parsers for textual representations of
      Haskell data structures, e.g. named fields.  Unsurprisingly,
      Text.Parse is really just a specialisation of the Poly combinators
-     for String input, and then entire Poly API is also re-exported.
+     for String input, and the entire Poly API is also re-exported.
      The <a href="http://repetae.net/~john/computer/haskell/DrIFT">DrIFT</a>
      tool can derive instances of the Parse class for you
      automatically.  (Use the syntax <tt>{-! derive : Parse !-}</tt>)
@@ -125,8 +125,8 @@ darcs repository at:
 <b>Released version:</b><br>
 polparse-1.00, release date 2007.01.xx<br>
 By HTTP:
-<a href="http://www.cs.york.ac.uk/fp/darcs/polyparse-1.00.tar.gz">.tar.gz</a>,
-<a href="http://www.cs.york.ac.uk/fp/darcs/polyparse-1.00.zip">.zip</a>.
+<a href="http://www.cs.york.ac.uk/fp/polyparse-1.00.tar.gz">.tar.gz</a>,
+<a href="http://www.cs.york.ac.uk/fp/polyparse-1.00.zip">.zip</a>.
 <br>
 By FTP: 
 <a href="ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/">

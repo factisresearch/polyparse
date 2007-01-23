@@ -9,7 +9,7 @@ directories of the compiler/interpreter.  The libraries and interfaces
 can then be used as "-package polyparse" (for ghc/nhc98 - no extra options
 required for Hugs).
 
-    ./configure
+    sh configure
     make
     make install
 

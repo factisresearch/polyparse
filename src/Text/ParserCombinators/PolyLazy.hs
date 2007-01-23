@@ -3,6 +3,9 @@ module Text.ParserCombinators.PolyLazy
     --   Parsers do not return explicit failure.  An exception is
     --   raised instead.  This allows partial results to be returned
     --   before a full parse is complete.
+    --   One of the key ways to ensure that your parser is properly lazy,
+    --   is to parse the initial portion of text returning a function, then
+    --   use the @apply@ combinator to build the final value.
     Parser(P)	-- datatype, instance of: Functor, Monad
   , runParser	-- :: Parser t a -> [t] -> (a, [t])
   , failBad     -- :: String -> Parser t a

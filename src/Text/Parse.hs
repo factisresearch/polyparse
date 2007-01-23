@@ -3,7 +3,7 @@ module Text.Parse
     --   specialisation of the (poly) Parser monad for String input.
     --   There are instances defined for all Prelude types.
     --   For user-defined types, you can write your own instance, or use
-    --   DrIFT to generate them automatically, e.g. {-! derive Parse !-}
+    --   DrIFT to generate them automatically, e.g. {-! derive : Parse !-}
     TextParser	-- synonym for Parser Char, i.e. string input, no state
   , Parse(..)	-- instances: (), (a,b), (a,b,c), Maybe a, Either a, [a],
 		--            Int, Integer, Float, Double, Char, Bool

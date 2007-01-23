@@ -1,4 +1,4 @@
-module Text.ParserCombinators.TextParser
+module Text.Parse
   ( -- * The Parse class is a replacement for the Read class.  It is a
     --   specialisation of the (poly) Parser monad for String input.
     --   There are instances defined for all Prelude types.

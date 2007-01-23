@@ -1,6 +1,6 @@
 #!/bin/sh
 #       configure -- prepare to compile/install the polyparse package
-#       modified from the HaXml configuren script: January 2007
+#       modified from the HaXml configure script: January 2007
 #       author:   Malcolm.Wallace@cs.york.ac.uk, August 2002
 
 SOFTWARE="polyparse"
@@ -8,7 +8,7 @@ VERSION="1.00"
 
 if [ -f obj/prefix ]
 then INSTALLDIR=`cat obj/prefix`
-else INSTALLDIR=/usr/local/bin
+else INSTALLDIR=
 fi
 
 # We need a working `echo' command: at least Solaris2.6 may not have it.
@@ -55,7 +55,7 @@ do
   echo "`basename $0` options:     [default in brackets]"
   echo "  --buildwith=(ghc|hugs|nhc98) Build $SOFTWARE for the given compiler [detected]"
   echo "  --buildopts=flags    Give extra flags needed by your build compiler [none]"
-  echo "  --prefix=bindir      Installed executables go in bindir [/usr/local/bin]"
+  echo "  --prefix=dir         Installed files go under dir [compiler-specific]"
             exit 0 ;;
     --version|-v) echo "$SOFTWARE:     $VERSION"
                   exit 0 ;;
@@ -241,9 +241,14 @@ then
   fi;fi;fi;
 fi
 
-echo "  Executables install into... $INSTALLDIR"
-echo "    (note: no extra /bin will be added to the end of that location)"
-echo "    (      re-run ./configure --prefix=... if this wasn't your intention)"
+echo "  Files ultimately install in:"	# details generated below
+echo "    (re-run ./configure --prefix=... if this wasn't your intention)"
+
+if [ "$INSTALLDIR" != "" ]
+then
+  GHCLIBDIR=$INSTALLDIR/$SOFTWARE-$VERSION/ghc-$GHCVERSION/lib
+  GHCINCDIR=$INSTALLDIR/$SOFTWARE-$VERSION/ghc-$GHCVERSION/imports
+fi
 
 # Prepare to build.
 if [ ! -d obj ]
@@ -268,6 +273,8 @@ then
   fi
   echo $GHCLIBDIR >obj/ghc/ghclibdir
   echo $GHCINCDIR >obj/ghc/ghcincdir
+  echo "      $GHCLIBDIR"	# report location to tty
+  echo "      $GHCINCDIR"	# report location to tty
   if $CYGWIN || $MINGW
     then cygpath -w ${GHCLIBDIR} >obj/ghc/ghclibdirraw
          cygpath -w ${GHCINCDIR}/ >obj/ghc/ghcincdirraw
@@ -293,6 +300,8 @@ then
   fi
   echo $NHCLIBDIR >obj/nhc98/nhc98libdir
   echo $NHCINCDIR >obj/nhc98/nhc98incdir
+  echo "      $NHCLIBDIR"	# report location to tty
+  echo "      $NHCINCDIR"	# report location to tty
   cp -Rp src/Text src/Makefile obj/nhc98
   if [ "$NHCNUM" -ge "116" ]
   then echo "-package base" >obj/nhc98/nhc98pkgs

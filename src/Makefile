@@ -34,6 +34,7 @@ endif
 
 all: libs toolset
 toolset:
+	cp $(TOOLSET) $(INSTALLDIR)
 libs: libHS$(SOFTWARE).a
 install-filesonly-ghc: libs $(INSTALLDIR)
 	cp libHS$(SOFTWARE).a `cat ghclibdir`
@@ -43,20 +44,18 @@ install-filesonly-ghc: libs $(INSTALLDIR)
 	mkdir -p `cat ghcincdir`/$(SOFTWARE)
 	cp interfaces.tar `cat ghcincdir`/$(SOFTWARE)
 	cd `cat ghcincdir`/$(SOFTWARE); tar xf interfaces.tar; rm interfaces.tar
-	cp $(TOOLSET) $(INSTALLDIR)
 install-filesonly-nhc98: libs $(INSTALLDIR)
 	cp libHS$(SOFTWARE).a `cat nhc98libdir`/`harch`
 	-ranlib `cat nhc98libdir`/`harch`/libHS$(SOFTWARE).a
-	rm -rf `cat nhc98incdir`/$(SOFTWARE)
-	mkdir -p `cat nhc98incdir`/$(SOFTWARE)
+	rm -rf `cat nhc98incdir`/packages/$(SOFTWARE)
+	mkdir -p `cat nhc98incdir`/packages/$(SOFTWARE)
 	cp interfaces.tar `cat nhc98incdir`/packages/$(SOFTWARE)
 	cd `cat nhc98incdir`/packages/$(SOFTWARE); tar xf interfaces.tar; rm interfaces.tar
-	cp $(TOOLSET) $(INSTALLDIR)
 install-ghc: install-filesonly-ghc $(SOFTWARE).pkgconf
 	`cat ghcpkgcmd` --remove-package=$(SOFTWARE) || true	# ignore any error
 	`cat ghcpkgcmd` --add-package <pkg.conf || \
 	`cat ghcpkgcmd` register $(SOFTWARE).pkgconf
-	echo "you can safely ignore any errors from --add-package"
+	@echo "you can safely ignore any errors from --add-package"
 install-nhc98: install-filesonly-nhc98
 install-tools-hugs: toolset-hugs $(INSTALLDIR)
 	cp $(patsubst ../../%, %, ${TOOLSET}) $(INSTALLDIR)

@@ -65,13 +65,13 @@ install-filesonly-hugs: install-hugs
 haddock:
 	mkdir -p docs/$(SOFTWARE)
 	for dir in $(DIRS); \
-		do mkdir -p docs/$(SOFTWARE)/src/$$dir; \
+		do mkdir -p docs/haddock/src/$$dir; \
 		done
 	for file in $(SRCS); \
 		do $(CPP) -D__NHC__ $$file >$$file.uncpp; \
-		   HsColour -anchorHTML $$file >docs/$(SOFTWARE)/`dirname $$file`/`basename $$file .hs`.html; \
+		   HsColour -anchorHTML $$file >docs/haddock/`dirname $$file`/`basename $$file .hs`.html; \
 		done
-	haddock --html --title=$(SOFTWARE) --odir=docs/$(SOFTWARE) \
+	haddock --html --title=$(SOFTWARE) --odir=docs/haddock \
 		--package=$(SOFTWARE) \
 		--source-module="src/%{MODULE/.//}.html" \
 		--source-entity="src/%{MODULE/.//}.html#%{NAME}" \
@@ -101,4 +101,4 @@ clean:
 	rm -rf obj/ghc obj/nhc98 obj/hugs
 	cd examples;    rm -f *.hi *.o
 realclean: clean
-
+	rm -rf obj

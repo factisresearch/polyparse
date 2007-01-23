@@ -17,7 +17,7 @@ SRCS = \
 
 TOOLSRCS = \
 
-AUX =	configure Makefile src/Makefile docs/* examples/* \
+AUX =	configure Makefile src/Makefile src/pkg.conf docs/* examples/* \
 	README LICENCE* COPYRIGHT script/echo.c Build.bat \
 	*.cabal Setup.hs
 ALLFILES = $(SRCS) $(TOOLSRCS) $(AUX)

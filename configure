@@ -279,10 +279,10 @@ then
     else echo ghc-pkg >obj/ghc/ghcpkgcmd
   fi
   echo ${BUILDWITH-ghc} >obj/ghccmd
-  cp -Rp src/Text src/Makefile obj/ghc
+  cp -Rp src/Text src/Makefile src/pkg.conf obj/ghc
   if [ "$GHCNUM" -ge "504" ]
   then echo "-package base" >obj/ghc/ghcpkgs
-  else echo "-package lang -package data" >obj/ghc/ghcpkgs
+  else echo "" >obj/ghc/ghcpkgs
   fi
 fi
 if [ "$NHCKNOWN" != "" ]

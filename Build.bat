@@ -37,6 +37,12 @@ rem -- Get on with the real work --
 if "%1"=="Remove" goto Remove
 
 rem -- Compile sources and create library archive
+if "%GHCVER%"=="6.4"   COPY polyparse.cabal %SRC%\pkg.conf
+if "%GHCVER%"=="6.4.1" COPY polyparse.cabal %SRC%\pkg.conf
+if "%GHCVER%"=="6.4.2" COPY polyparse.cabal %SRC%\pkg.conf
+if "%GHCVER%"=="6.6"   COPY polyparse.cabal %SRC%\pkg.conf
+if "%GHCVER%"=="6.6.1" COPY polyparse.cabal %SRC%\pkg.conf
+if "%GHCVER%"=="6.6.2" COPY polyparse.cabal %SRC%\pkg.conf
 cd %SRC%
 %GHC% --make -cpp -i. -package-name polyparse-1.00 %SRCS%
 %AR% r libHSpolyparse.a %OBJS%
@@ -55,15 +61,31 @@ rem    /F - display full filenames while copying
 XCOPY /S /F *.hi %GHCDIR%\imports
 
 rem -- Finally, register the package with GHC
-COPY polyparse.cabal pkg.conf
+if "%GHCVER%"=="6.2"    goto OldRegister
+if "%GHCVER%"=="6.2.1"  goto OldRegister
+if "%GHCVER%"=="6.2.2"  goto OldRegister
+if "%GHCVER%"=="6.4"    goto NewRegister
+if "%GHCVER%"=="6.4.1"  goto NewRegister
+if "%GHCVER%"=="6.4.2"  goto NewRegister
+if "%GHCVER%"=="6.6"    goto NewRegister
+if "%GHCVER%"=="6.6.1"  goto NewRegister
+if "%GHCVER%"=="6.6.2"  goto NewRegister
+
+goto Exit
+
+rem -- old-style package registration
+:OldRegister
+%GHCPKG% --add-package -i pkg.conf
+goto Exit
+
+rem -- new-style package registration
+:NewRegister
 ECHO import-dirs:   %GHCDIR%\imports >>pkg.conf
 ECHO library-dirs:  %GHCDIR% >>pkg.conf
 ECHO depends:       base, haskell98 >>pkg.conf
 ECHO hs-libraries:  HSpolyparse >>pkg.conf
 %GHCPKG% register pkg.conf
-
 goto Exit
-
 
 rem -- Remove GHC package for polyparse --
 :Remove

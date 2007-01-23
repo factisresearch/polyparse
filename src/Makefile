@@ -32,7 +32,8 @@ endif
 
 .PHONY: all libs
 
-all: libs
+all: libs toolset
+toolset:
 libs: libHS$(SOFTWARE).a
 install-filesonly-ghc: libs $(INSTALLDIR)
 	cp libHS$(SOFTWARE).a `cat ghclibdir`

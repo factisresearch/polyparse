@@ -31,6 +31,64 @@ one of the included variations at any one time - they are generally
 alternatives to each other, as well as an alternative to other
 widely-used parser libraries available elsewhere.
 
+<ul>
+<li> <b>Text.ParserCombinators.HuttonMeijer</b>  The granddaddy of all
+     monadic parser combinator libraries, dating from 1996.  Originally
+     distributed with Gofer (a forerunner of Hugs) as ParseLib.  It uses
+     the idea of "failure as a list of successes" to give multiple
+     possible parses through backtracking.  (But in practice, almost
+     nobody wants any parse except the first complete one.)
+<li> <b>Text.ParserCombinators.HuttonMeijerWallace</b>  The
+     Hutton/Meijer combinators, extended to take an arbitrary token type
+     as input (not just characters), plus a running state (e.g. to
+     collect a symbol table, or macros), plus some facilities for
+     simple error-reporting.
+<li> <b>Text.ParserCombinators.Poly</b>
+     The name Poly comes from the arbitrary token type.  Thus, you can
+     write your own lexer if you wish, rather than needing to code
+     lexical analysis within the parser itself.  This is a fresh
+     set of combinators, improving on the HuttonMeijer variety by
+     keeping only a single success, not a list of them.  This is
+     more space-efficient, whilst still permitting backtracking.
+     Error-handling is also much improved: there are essentially two
+     kinds of failure, soft and hard.  Soft failure just means that the
+     current parse did not work out, but another parse might be OK.
+     Hard failure means that no parse will succeed, because we have
+     already passed a point of commitment.  Thus you can give far more
+     accurate error messages to the user, including multi-layered
+     locations.
+<li> <b>Text.ParserCombinators.PolyState</b>  is just like Poly, except it
+     adds an arbitrary running state parameter.
+<li> <b>Text.ParserCombinators.PolyLazy</b>  is just like Poly, except it
+     does not return explicit failure.  Instead, an exception is raised.
+     Thus, it can return a partial parse result, before a full parse is
+     complete.  The word partial indicates that, having committed to
+     return some outer data constructor, we might later discover some
+     parse error further inside, so the value will be partial, as in
+     incomplete: containing bottom.  However, if you are confident that
+     the input is error-free, then you will gain hugely in
+     space-efficiency - essentially you can stream-process your parsed
+     data-structure within small constant space.  This is especially useful
+     for very large structures like e.g. XML trees.
+<li> <b>Text.ParserCombinators.PolyStateLazy</b>  combines PolyState and
+     PolyLazy.
+<li> <b>Text.Parse</b>  The Text.Read class from Haskell'98 is widely
+     recognised to have many problems.  It is inefficient.  If a read
+     fails, there is no indication of why.  Worst of all, a read failure
+     crashes your whole program!  Text.Parse is a proposed replacement
+     for the Read class.  It defines a new class, Parse, with methods
+     that return an explicit notification of errors, through the Either
+     type.  It also defines a number of useful helper functions to
+     enable the construction of parsers for textual representations of
+     Haskell data structures, e.g. named fields.  Unsurprisingly,
+     Text.Parse is really just a specialisation of the Poly combinators
+     for String input, and then entire Poly API is also re-exported.
+</ul>
+<p>
+All the <b>Poly*</b> variations share the same basic API, so it is easy
+to switch from one set to another, when you discover you need an extra
+facility, just by changing a single import.
+
 <hr>
 <center><h3><a name="how">How do I use it?</a></h3></center>
 <p>
@@ -38,14 +96,16 @@ widely-used parser libraries available elsewhere.
 is generated automatically by Haddock directly from the source code.
 
 <p>
-Parser combinators have a long history in Haskell.  The first(?) monadic
-set of combinators was introduced by Hutton and Meijer in 1996, and
-distributed with Gofer (a precursor to Hugs), and known simply as
-ParseLib.  That set lives on here as Text.ParserCombinator.HuttonMeijer.
+In general, you can just add an import of the relevant module to your
+source code, and everything should just compile OK.  However, if the
+package is not 'exposed' (in ghc-pkg terminology), then you might need
+to use a command-line option <tt>--package polyparse</tt> at compile
+time.
 
 <p>
 <b>Known problems:</b>
 <ul>
+<li> No problems currently known.
 <li> Report bugs to <tt>Malcolm.Wallace@cs.york.ac.uk</tt>
 <li> Even better, fix any bugs you find, and then <tt>darcs send</tt> a patch.
 </ul>
@@ -134,6 +194,12 @@ to discuss your requirements.)
 <p>
 <center><h3><a name="related">Related work</a></h3></center>
 <ul>
+<li>
+Parser combinators have a long history in Haskell.  The first(?) monadic
+set of combinators was introduced by Hutton and Meijer in 1994, and
+distributed with Gofer (a precursor to Hugs), and known simply as
+ParseLib.  That set lives on here as Text.ParserCombinator.HuttonMeijer.
+<li>Niklas Rojemo's combinators.
 <li>Daan Leijen's parsec.
 <li>Doaitse Swierstra's UU_Parse.
 <li>Koen Claessen's ReadP.

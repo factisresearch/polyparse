@@ -1,9 +1,6 @@
 module Text.Parse
-  ( -- * The Parse class is a replacement for the Read class.  It is a
-    --   specialisation of the (poly) Parser monad for String input.
-    --   There are instances defined for all Prelude types.
-    --   For user-defined types, you can write your own instance, or use
-    --   DrIFT to generate them automatically, e.g. {-! derive : Parse !-}
+  ( -- * The Parse class is a replacement for the standard Read class. 
+    -- $parser
     TextParser	-- synonym for Parser Char, i.e. string input, no state
   , Parse(..)	-- instances: (), (a,b), (a,b,c), Maybe a, Either a, [a],
 		--            Int, Integer, Float, Double, Char, Bool
@@ -24,6 +21,12 @@ import List (intersperse)
 import Text.ParserCombinators.Poly
 
 ------------------------------------------------------------------------
+-- $parser
+-- The Parse class is a replacement for the standard Read class.  It is a
+-- specialisation of the (poly) Parser monad for String input.
+-- There are instances defined for all Prelude types.
+-- For user-defined types, you can write your own instance, or use
+-- DrIFT to generate them automatically, e.g. {-! derive : Parse !-}
 
 -- | A synonym for Parser Char, i.e. string input (no state)
 type TextParser a = Parser Char a

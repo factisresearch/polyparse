@@ -1,28 +1,26 @@
 module Text.ParserCombinators.PolyStateLazy
-  ( -- * A Parser datatype parameterised on arbitrary token type and state type.
-    --   Parsers do not return explicit failure.  An exception is raised
-    --   instead.  This allows partial results to be returned before a
-    --   full parse is complete.
+  ( -- * The Parser datatype.
+    -- $parser
     Parser(P)	-- datatype, instance of: Functor, Monad
   , runParser	-- :: Parser s t a -> s -> [t] -> (a, s, [t])
   , failBad	-- :: String -> Parser s t a
   , commit	-- :: Parser s t a -> Parser s t a
-    -- * Combinators
-    -- ** primitives
+    -- * Combinators:
+    -- ** Primitives
   , next	-- :: Parser s t t
   , satisfy	-- :: (t->Bool) -> Parser s t t
   , apply	-- :: Parser t (a->b) -> Parser s t a -> Parser s t b
   , discard	-- :: Parser s t a -> Parser s t b -> Parser s t a
-    -- ** error-handling
+    -- ** Error-handling
   , adjustErr	-- :: Parser s t a -> (String->String) -> Parser s t a
   , adjustErrBad-- :: Parser s t a -> (String->String) -> Parser s t a
   , indent	-- :: Int -> String -> String
-    -- ** choices
+    -- ** Choices
   , onFail	-- :: Parser s t a -> Parser s t a -> Parser s t a
   , oneOf	-- :: [Parser s t a] -> Parser s t a
   , oneOf'	-- :: [(String, Parser s t a)] -> Parser s t a
   , optional	-- :: Parser s t a -> Parser s t (Maybe a)
-    -- ** sequences
+    -- ** Sequences
   , many	-- :: Parser s t a -> Parser s t [a]
   , many1	-- :: Parser s t a -> Parser s t [a]
   , sepBy	-- :: Parser s t a -> Parser s t sep -> Parser s t [a]
@@ -32,11 +30,11 @@ module Text.ParserCombinators.PolyStateLazy
   , bracket	-- :: Parser s t bra -> Parser s t ket -> Parser s t a
                 --    -> Parser s t a
   , manyFinally	-- :: Parser s t a -> Parser s t z -> Parser s t [a]
-    -- ** state-handling
+    -- ** State-handling
   , stUpdate	-- :: (s->s) -> Parser s t ()
   , stQuery	-- :: (s->a) -> Parser s t a
   , stGet	-- :: Parser s t s
-    -- ** re-parsing
+    -- ** Re-parsing
   , reparse	-- :: [t] -> Parser s t ()
   ) where
 
@@ -48,6 +46,11 @@ throwE msg = throw (ErrorCall msg)
 throwE :: String -> a
 throwE msg = error msg
 #endif
+
+-- $parser
+-- Parsers do not return explicit failure.  An exception is raised
+-- instead.  This allows partial results to be returned before a
+-- full parse is complete.
 
 -- | The @Parser@ datatype is a fairly generic parsing monad with error
 --   reporting and a running state.  It can be used for arbitrary token

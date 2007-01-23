@@ -1,25 +1,26 @@
 module Text.ParserCombinators.Poly
-  ( -- * A Parser datatype parameterised on arbitrary token type
+  ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad
   , runParser	-- :: Parser t a -> [t] -> (Either String a, [t])
   , failBad     -- :: String -> Parser t a
   , commit      -- :: Parser t a -> Parser t a
-    -- * Combinators
-    -- ** primitives
+
+    -- * Combinators:
+    -- ** Primitives
   , next	-- :: Parser t t
   , satisfy	-- :: (t->Bool) -> Parser t t
   , apply	-- :: Parser t (a->b) -> Parser t a -> Parser t b
   , discard	-- :: Parser t a -> Parser t b -> Parser t a
-    -- ** error-handling
+    -- ** Error-handling
   , adjustErr	-- :: Parser t a -> (String->String) -> Parser t a
   , adjustErrBad-- :: Parser t a -> (String->String) -> Parser t a
   , indent	-- :: Int -> String -> String
-    -- ** choices
+    -- ** Choices
   , onFail	-- :: Parser t a -> Parser t a -> Parser t a
   , oneOf	-- :: Show t => [Parser t a] -> Parser t a
   , oneOf'	-- :: [(String,Parser t a)] -> Parser t a
   , optional	-- :: Parser t a -> Parser t (Maybe a)
-    -- ** sequences
+    -- ** Sequences
   , many	-- :: Parser t a -> Parser t [a]
   , many1	-- :: Parser t a -> Parser t [a]
   , sepBy	-- :: Parser t a -> Parser t sep -> Parser t [a]

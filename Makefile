@@ -63,7 +63,7 @@ install-filesonly-nhc98:
 	cd obj/nhc98; $(MAKE) HC=nhc98 install-filesonly-nhc98
 install-filesonly-hugs: install-hugs
 haddock:
-	mkdir -p docs/$(SOFTWARE)
+	mkdir -p docs/haddock
 	for dir in $(DIRS); \
 		do mkdir -p docs/haddock/src/$$dir; \
 		done

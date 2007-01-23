@@ -1,31 +1,26 @@
 module Text.ParserCombinators.PolyLazy
-  ( -- * A Parser datatype parameterised on arbitrary token type.
-    --   Parsers do not return explicit failure.  An exception is
-    --   raised instead.  This allows partial results to be returned
-    --   before a full parse is complete.
-    --   One of the key ways to ensure that your parser is properly lazy,
-    --   is to parse the initial portion of text returning a function, then
-    --   use the @apply@ combinator to build the final value.
+  ( -- * The Parser datatype.
+    -- $parser
     Parser(P)	-- datatype, instance of: Functor, Monad
   , runParser	-- :: Parser t a -> [t] -> (a, [t])
   , failBad     -- :: String -> Parser t a
   , commit      -- :: Parser t a -> Parser t a
-    -- * Combinators
-    -- ** primitives
+    -- * Combinators:
+    -- ** Primitives
   , next	-- :: Parser t t
   , satisfy	-- :: (t->Bool) -> Parser t t
   , apply	-- :: Parser t (a->b) -> Parser t a -> Parser t b
   , discard	-- :: Parser t a -> Parser t b -> Parser t a
-    -- ** error-handling
+    -- ** Error-handling
   , adjustErr	-- :: Parser t a -> (String->String) -> Parser t a
   , adjustErrBad-- :: Parser t a -> (String->String) -> Parser t a
   , indent	-- :: Int -> String -> String
-    -- ** choices
+    -- ** Choices
   , onFail	-- :: Parser t a -> Parser t a -> Parser t a
   , oneOf	-- :: Show t => [Parser t a] -> Parser t a
   , oneOf'	-- :: [(String,Parser t a)] -> Parser t a
   , optional	-- :: Parser t a -> Parser t (Maybe a)
-    -- ** sequences
+    -- ** Sequences
   , many	-- :: Parser t a -> Parser t [a]
   , many1	-- :: Parser t a -> Parser t [a]
   , sepBy	-- :: Parser t a -> Parser t sep -> Parser t [a]
@@ -35,7 +30,7 @@ module Text.ParserCombinators.PolyLazy
   , bracket	-- :: Parser t bra -> Parser t ket -> Parser t a
                 --    -> Parser t a
   , manyFinally -- :: Parser t a -> Parser t z -> Parser t [a]
-    -- ** re-parsing
+    -- ** Re-parsing
   , reparse	-- :: [t] -> Parser t ()
   ) where
 
@@ -48,9 +43,18 @@ throwE :: String -> a
 throwE msg = error msg
 #endif
 
+-- $parser
+-- When applied, these parsers do not return explicit failure.
+-- An exception is
+-- raised instead.  This allows partial results to be returned
+-- before a full parse is complete.
+-- One of the key ways to ensure that your parser is properly lazy,
+-- is to parse the initial portion of text returning a function, then
+-- use the @apply@ combinator to build the final value.
+
 -- | The @Parser@ datatype is a fairly generic parsing monad with error
 --   reporting.  It can be used for arbitrary token types, not just
---   String input.  (If you require a running state, use module PolyState
+--   String input.  (If you require a running state, use module PolyStateLazy
 --   instead.)
 newtype Parser t a = P ([t] -> (Either String a, [t]))
 

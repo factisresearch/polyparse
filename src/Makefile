@@ -34,7 +34,7 @@ endif
 
 all: libs toolset
 toolset:
-	cp $(TOOLSET) $(INSTALLDIR)
+	#cp $(TOOLSET) $(INSTALLDIR)
 libs: libHS$(SOFTWARE).a
 install-filesonly-ghc: libs $(INSTALLDIR)
 	cp libHS$(SOFTWARE).a `cat ghclibdir`

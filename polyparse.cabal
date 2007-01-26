@@ -5,8 +5,9 @@ cc-options:	-DVERSION="1.0"
 license:	LGPL
 license-file:	COPYRIGHT
 author:		Malcolm Wallace <Malcolm.Wallace@cs.york.ac.uk>
+maintainer:	author
 homepage:	http://www.cs.york.ac.uk/fp/polyparse/
-category:	Text
+category:	Text, Parsing
 synopsis:	A variety of alternative parser combinator libraries.
 description:
 	A variety of alternative parser combinator libraries, including
@@ -23,7 +24,7 @@ exposed-modules:
 	Text.ParserCombinators.PolyLazy,
 	Text.ParserCombinators.PolyStateLazy,
 	Text.Parse
-hs-source-dir:	src
+hs-source-dirs:	src
 build-depends:	base, haskell98
 extensions:	CPP
-category:	Text, Parsing
+tested-with:	nhc98, ghc

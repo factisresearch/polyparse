@@ -120,7 +120,7 @@ instance Parse Char where
  -- parseList = bracket (isWord "\"") (satisfy (=='"'))
  --                     (many (satisfy (/='"')))
 	-- not totally correct for strings...
-    parseList = do { w <- word; if head w == '"' then return w
+    parseList = do { w <- word; if head w == '"' then return (init (tail w))
                                 else fail "not a string" }
 
 instance Parse Bool where

@@ -27,4 +27,3 @@ exposed-modules:
 hs-source-dirs:	src
 build-depends:	base, haskell98
 extensions:	CPP
-tested-with:	nhc98, ghc

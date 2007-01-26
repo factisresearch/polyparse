@@ -1,7 +1,7 @@
 name:		polyparse
-version:	1.00
-ghc-options:	-DVERSION="1.00"
-cc-options:	-DVERSION="1.00"
+version:	1.0
+ghc-options:	-DVERSION="1.0"
+cc-options:	-DVERSION="1.0"
 license:	LGPL
 license-file:	COPYRIGHT
 author:		Malcolm Wallace <Malcolm.Wallace@cs.york.ac.uk>
@@ -26,3 +26,4 @@ exposed-modules:
 hs-source-dir:	src
 build-depends:	base, haskell98
 extensions:	CPP
+category:	Text, Parsing

@@ -105,6 +105,11 @@ to use a command-line option <tt>--package polyparse</tt> at compile
 time.
 
 <p>
+The original Hutton/Meijer combinators are described in a very nice
+tutorial tech report:
+<a href="http://eprints.nottingham.ac.uk/archive/00000237/">NOTTCS-TR-96-4</a>
+
+<p>
 I wrote some motivation for <tt>Text.Parse</tt> (including simple examples)
 on my blog a while back. <a href="http://nhc98.blogspot.com/2005/11/replacement-for-read-class.html">Here is the posting.</a>
 
@@ -207,27 +212,31 @@ to discuss your requirements.)
 <ul>
 <li>
 Parser combinators have a long history in Haskell.  The first(?) monadic
-combinator tutorial was introduced by Hutton and Meijer in 1994, and the
-accompanying library was distributed with Gofer (a precursor to Hugs),
-and known simply as ParseLib.  That library lives on here as
-Text.ParserCombinators.HuttonMeijer.
+combinator tutorial was introduced by
+<a href="http://eprints.nottingham.ac.uk/archive/00000237/">Hutton and
+Meijer</a> in 1996, and the accompanying library was distributed with
+Gofer (a precursor to Hugs), and known simply as ParseLib.  That library
+lives on here as Text.ParserCombinators.HuttonMeijer.
 
-<li>Niklas Rojemo's combinators.
-The parser combinators developed and used in the implementation of the
-nhc98 compiler are monadic and space-efficient.  However, they do not
-use the standard do-notation, because in fact they are more general than
-the standard monad category.
+<li>
+<a href="http://www.cs.chalmers.se/~rojemo/thesis.html">Niklas Rojemo's
+combinators.</a> The parser combinators developed and used in the
+implementation of the nhc98 compiler are monadic and space-efficient.
+However, they do not use the standard do-notation, because in fact they
+are more general than the standard monad category.
 
-<li>Daan Leijen's parsec.
-The parsec library is widely used, since it is distributed with ghc.
-Its combinators are fairly robust, but you need to place explicit
-backtracking into your parsers, using the <tt>try</tt> operator.  This
-can be tricky.
+<li>
+<a href="http://research.microsoft.com/~emeijer/Papers/Parsec.pdf">
+Daan Leijen's parsec.</a> The parsec library is widely used, since it is
+distributed with ghc.  Its combinators are fairly robust, but you need
+to place explicit backtracking into your parsers, using the <tt>try</tt>
+operator.  This can be tricky.
 
-<li>Doaitse Swierstra's UU_Parse.
+<li><a href="http://www.cs.uu.nl/wiki/HUT/ParserCombinators">Doaitse
+Swierstra's UU_Parse.</a>
 An all-singing, all-dancing parsing library.  Deeply sophisticated.
 
-<li>Koen Claessen's ReadP.
+<li><a href="http://cvs.haskell.org/Hugs/pages/libraries/base/Text-ParserCombinators-ReadP.html">Koen Claessen's ReadP.</a>
 This is a different proposed replacement for the standard Haskell'98
 Read class.  It is a whole lot more efficient that Read, but because it
 is also API-compatible with Read, that unfortunately means it suffers

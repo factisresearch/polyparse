@@ -19,6 +19,7 @@ module Text.ParserCombinators.PolyState
   , oneOf	-- :: [Parser s t a] -> Parser s t a
   , oneOf'	-- :: [(String, Parser s t a)] -> Parser s t a
     -- ** Sequences
+  , exactly	-- :: Int -> Parser s t a -> Parser s t [a]
   , many	-- :: Parser s t a -> Parser s t [a]
   , many1	-- :: Parser s t a -> Parser s t [a]
   , sepBy	-- :: Parser s t a -> Parser s t sep -> Parser s t [a]
@@ -159,6 +160,14 @@ oneOf' = accum []
 -- | Helper for formatting error messages: indents all lines by a fixed amount.
 indent :: Int -> String -> String
 indent n = unlines . map (replicate n ' ' ++) . lines
+
+-- | 'exactly n p' parses a precise number of items, n, using the parser
+--   p, in sequence.
+exactly :: n -> Parser s t a -> Parser s t [a]
+exactly 0 p = return []
+exactly n p = do x <- p
+                 xs <- exactly (n-1)
+                 return (x:xs)
 
 -- | 'many p' parses a list of elements with individual parser p.
 --   Cannot fail, since an empty list is a valid return value.

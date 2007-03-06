@@ -21,6 +21,7 @@ module Text.ParserCombinators.PolyLazy
   , oneOf'	-- :: [(String,Parser t a)] -> Parser t a
   , optional	-- :: Parser t a -> Parser t (Maybe a)
     -- ** Sequences
+  , exactly	-- :: Int -> Parser t a -> Parser t [a]
   , many	-- :: Parser t a -> Parser t [a]
   , many1	-- :: Parser t a -> Parser t [a]
   , sepBy	-- :: Parser t a -> Parser t sep -> Parser t [a]
@@ -191,6 +192,14 @@ indent n = unlines . map (replicate n ' ' ++) . lines
 -- | 'optional' indicates whether the parser succeeded through the Maybe type.
 optional :: Parser t a -> Parser t (Maybe a)
 optional p = fmap Just p `onFail` return Nothing
+
+-- | 'exactly n p' parses a precise number of items, n, using the parser
+--   p, in sequence.
+exactly :: n -> Parser t a -> Parser t [a]
+exactly 0 p = return []
+exactly n p = do x <- p
+                 xs <- exactly (n-1)
+                 return (x:xs)
 
 -- | 'many p' parses a list of elements with individual parser p.
 --   Cannot fail, since an empty list is a valid return value.

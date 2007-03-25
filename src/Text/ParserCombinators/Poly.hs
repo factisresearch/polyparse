@@ -43,7 +43,7 @@ module Text.ParserCombinators.Poly
 newtype Parser t a = P ([t] -> (EitherE String a, [t]))
 
 --   A return type like Either, that distinguishes not only between
---   right and wrong answers, but also had gradations of wrongness.
+--   right and wrong answers, but also has gradations of wrongness.
 type EitherE a b = Either (Bool,a) b
 
 -- | Apply a parser to an input token sequence.

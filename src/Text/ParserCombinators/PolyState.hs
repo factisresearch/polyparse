@@ -163,10 +163,10 @@ indent n = unlines . map (replicate n ' ' ++) . lines
 
 -- | 'exactly n p' parses a precise number of items, n, using the parser
 --   p, in sequence.
-exactly :: n -> Parser s t a -> Parser s t [a]
+exactly :: Int -> Parser s t a -> Parser s t [a]
 exactly 0 p = return []
 exactly n p = do x <- p
-                 xs <- exactly (n-1)
+                 xs <- exactly (n-1) p
                  return (x:xs)
 
 -- | 'many p' parses a list of elements with individual parser p.

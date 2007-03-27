@@ -195,10 +195,10 @@ optional p = fmap Just p `onFail` return Nothing
 
 -- | 'exactly n p' parses a precise number of items, n, using the parser
 --   p, in sequence.
-exactly :: n -> Parser t a -> Parser t [a]
+exactly :: Int -> Parser t a -> Parser t [a]
 exactly 0 p = return []
 exactly n p = do x <- p
-                 xs <- exactly (n-1)
+                 xs <- exactly (n-1) p
                  return (x:xs)
 
 -- | 'many p' parses a list of elements with individual parser p.

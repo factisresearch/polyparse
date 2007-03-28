@@ -12,9 +12,14 @@ module Text.ParserCombinators.Poly.ByteString
   , module Text.ParserCombinators.Poly.Base
   ) where
 
-
-import Text.ParserCombinators.PolyParse
-import Data.ByteString as BS
+import Text.ParserCombinators.Poly.Base
+import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
+#if defined(__GLASGOW_HASKELL__)
+import GHC.Base (unsafeCoerce#)
+unsafeCoerce = unsafeCoerce#
+#else
+#endif
 
 -- | This @Parser@ datatype is a parsing monad with error reporting.
 --   It has fixed token type, namely Char stored in a ByteString, so

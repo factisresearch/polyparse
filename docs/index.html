@@ -114,6 +114,20 @@ I wrote some motivation for <tt>Text.Parse</tt> (including simple examples)
 on my blog a while back. <a href="http://nhc98.blogspot.com/2005/11/replacement-for-read-class.html">Here is the posting.</a>
 
 <p>
+If you are familiar with the Parsec library, then the key insight for
+using PolyParse is that the two libraries' approach to backtracking are
+the duals of each another.  In Parsec, you must explicitly add a
+<tt>try</tt> combinator at any location where backtracking might be
+necessary.  Users often find this a bit of a black art.  In PolyParse
+by contrast, all parsers are backtracking unless you explicitly add a
+<tt>commit</tt> (or one of its variations).  It is easy to tell where to
+add a commit point, because you have already parsed enough of a data
+structure to know that only one outcome is possible.  For instance, if
+you are parsing a Haskell value produced by 'show', then as soon as you
+have parsed the initial constructor, you know that no other constructor
+of that datatype is possible, so you can commit to returning it.
+
+<p>
 User-contributed documentation for polyparse is on the Haskell wiki at:
 <a href="http://haskell.org/haskellwiki/Polyparse">http://haskell.org/haskellwiki/Polyparse</a>
 Please edit the wiki if you discover any nice tricks!

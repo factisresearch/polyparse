@@ -129,7 +129,9 @@ apply :: Parser t (a->b) -> Parser t a -> Parser t b
 infixl 3 `discard`
 -- | @x `discard` y@ parses both x and y, but discards the result of y
 discard :: Parser t a -> Parser t b -> Parser t a
-px `discard` py = do { x <- px; _ <- py; return x }
+--px `discard` py = do { x <- px; _ <- py; return x }
+-- Needs to be lazier!  Do not force the discarded portion too early.
+px `discard` py = do { x <- px; return (\_-> x) `apply` py }
 
 -- | @p `adjustErr` f@ applies the transformation @f@ to any error message
 --   generated in @p@, having no effect if @p@ succeeds.
@@ -197,20 +199,20 @@ optional p = fmap Just p `onFail` return Nothing
 --   p, in sequence.
 exactly :: Int -> Parser t a -> Parser t [a]
 exactly 0 p = return []
-exactly n p = do x <- p
-                 xs <- exactly (n-1) p
-                 return (x:xs)
+exactly n p = return (:) `apply` p `apply` exactly (n-1) p
 
 -- | 'many p' parses a list of elements with individual parser p.
 --   Cannot fail, since an empty list is a valid return value.
 many :: Parser t a -> Parser t [a]
 many p = many1 p `onFail` return []
+  where many1 p = do { x <- p
+                     ; return (x:) `apply` many p
+                     }
 
 -- | Parse a non-empty list of items.
 many1 :: Parser t a -> Parser t [a]
 many1 p = do { x <- p `adjustErr` (("In a sequence:\n"++). indent 2)
-             ; xs <- many p
-             ; return (x:xs)
+             ; return (x:) `apply` many p
              }
 --       `adjustErr` ("When looking for a non-empty sequence:\n\t"++)
 
@@ -221,10 +223,9 @@ sepBy p sep = do sepBy1 p sep `onFail` return []
 -- | Parse a non-empty list of items separated by discarded junk.
 sepBy1 :: Parser t a -> Parser t sep -> Parser t [a]
 sepBy1 p sep = do { x <- p
-                  ; xs <- many (do {sep; p})
-                  ; return (x:xs)
+                  ; return (x:) `apply` many (do {sep; p})
                   }
-         `adjustErr` ("When looking for a non-empty sequence with separators:\n\t"++)
+   `adjustErr` ("When looking for a non-empty sequence with separators:\n\t"++)
  
 -- | Parse a list of items, discarding the start, end, and separator
 --   items.
@@ -235,18 +236,16 @@ bracketSep open sep close p =
        `onFail`
     do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
        ; x <- p  `adjustErr` ("After first bracket in a group:\n\t"++)
-       ; xs <- many (do {sep; p})
-       ; close   `adjustErrBad` ("When looking for closing bracket:\n\t"++)
-       ; return (x:xs)
+       ; return (x:) `apply`
+           manyFinally (do {sep; p})
+              (close `adjustErrBad` ("When looking for closing bracket:\n\t"++))
        }
 
 -- | Parse a bracketed item, discarding the brackets.
 bracket :: Parser t bra -> Parser t ket -> Parser t a -> Parser t a
 bracket open close p = do
     do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
-       ; x <- p
-       ; close   `adjustErrBad` ("Missing closing bracket:\n\t"++)
-       ; return x
+       ; p `discard` (close `adjustErrBad` ("Missing closing bracket:\n\t"++))
        }
 
 -- | 'manyFinally e t' parses a possibly-empty sequence of e's,

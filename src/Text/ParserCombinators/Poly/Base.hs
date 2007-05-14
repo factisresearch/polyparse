@@ -70,11 +70,13 @@ infixl 6 `onFail`	-- not sure about precedence 6?
 next      :: PolyParse p => p t
   --  where t is constrained to be the input token type
 
--- | One token satisfying a predicate
+-- | One token satisfying a predicate.
 satisfy :: PolyParse p => (t->Bool) -> p t t
 satisfy p = do{ x <- next
               ; if p x then return x else fail "Parse.satisfy: failed"
               }
+  -- note: must be re-defined for each implementation because
+  --       its type cannot be expressed otherwise.
 -}
 
 infixl 3 `apply`
@@ -82,6 +84,7 @@ infixl 3 `apply`
 --   Rather like ordinary function application lifted into parsers.
 apply :: PolyParse p => p (a->b) -> p a -> p b
 pf `apply` px = do { f <- pf; x <- px; return (f x) }
+  -- note: the Poly.Lazy variants override this defn with a lazier one.
 
 infixl 3 `discard`
 -- | @x `discard` y@ parses both x and y, but discards the result of y.

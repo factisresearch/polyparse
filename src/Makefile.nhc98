@@ -4,6 +4,9 @@ SEARCH	= -package base
 EXTRA_H_FLAGS   = -K6M -DVERSION=$(VERSION)
 EXTRA_HBC_FLAGS = -H50M -A4M
 
+DIRS	= \
+	Text Text/ParserCombinators Text/ParserCombinators/Poly
+
 SRCS	= \
 	Text/ParserCombinators/HuttonMeijer.hs \
 	Text/ParserCombinators/HuttonMeijerWallace.hs \

@@ -29,7 +29,7 @@ to the library have been made in the move from Gofer to Haskell:
 -- | This library of monadic parser combinators is based on the ones
 --   defined by Graham Hutton and Erik Meijer.  It has been extended by
 --   Malcolm Wallace to use an abstract token type (no longer just a
---   string) as input, and to incorporate a State Transformer monad, useful
+--   string) as input, and to incorporate state in the monad, useful
 --   for symbol tables, macros, and so on.  Basic facilities for error
 --   reporting have also been added, and later extended by Graham Klyne
 --   to return the errors through an @Either@ type, rather than just

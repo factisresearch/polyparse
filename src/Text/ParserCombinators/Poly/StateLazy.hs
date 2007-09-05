@@ -65,8 +65,6 @@ instance Monad (Parser s t) where
     fail msg     = P (\s ts-> (Left msg, s, ts))
 
 instance PolyParse (Parser s t) where
-    failBad msg      = P (\s ts-> (throwE msg, s, ts))
-
     commit (P p) = P (\s ts-> case p s ts of
                             (Left e, s', ts') -> (throwE e, s', ts')
                             right             -> right )
@@ -91,6 +89,14 @@ instance PolyParse (Parser s t) where
                                              in p u ts
                            right          -> right )
             showErr (name,err) = name++":\n"++indent 2 err
+    (P pf) `apply` (P px) = P (\s ts->
+        case pf s ts of
+          (Left msg, s', ts') -> (Left msg, s', ts')
+          (Right f,  s', ts') -> let (x',s'',ts'') = px s' ts'
+                                     x = case x' of { Right x -> x
+                                                    ; Left e -> throwE e }
+                                 in (Right (f x), s'', ts'') )
+
 
 -- Combinators
 

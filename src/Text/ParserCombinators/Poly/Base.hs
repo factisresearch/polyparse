@@ -4,9 +4,9 @@ module Text.ParserCombinators.Poly.Base
 
     -- * Combinators general to all parser types.
     -- ** Simple combinators
-  , apply	-- :: PolyParse p => p (a->b) -> p a -> p b
   , discard	-- :: PolyParse p => p a -> p b -> p a
     -- ** Error-handling
+  , failBad	-- :: PolyParse p => String -> p a
   , adjustErrBad-- :: PolyParse p => p a -> (String->String) -> p a
   , indent	-- :: Int -> String -> String
     -- ** Choices
@@ -36,10 +36,6 @@ module Text.ParserCombinators.Poly.Base
 --   afresh for every concrete type, but which (for technical reasons)
 --   cannot be class methods.  They are @next@ and @satisfy@.
 class (Functor p, Monad p) => PolyParse p where
-    -- | When a simple fail is not strong enough, use failBad for emphasis.
-    --   An emphasised (severe) error can propagate out through choice
-    --   operators.
-    failBad   :: String -> p a
     -- | Commit is a way of raising the severity of any errors found within
     --   its argument.  Used in the middle of a parser definition, it means that
     --   any operations prior to commitment fail softly, but after commitment,
@@ -59,8 +55,15 @@ class (Functor p, Monad p) => PolyParse p where
     --   report only the severe errors, and if none of those, then report
     --   all the soft errors.
     oneOf'    :: [(String, p a)] -> p a
+    -- | Apply a parsed function to a parsed value.
+    --   Rather like ordinary function application lifted into parsers.
+    apply     :: p (a->b) -> p a -> p b
+    pf `apply` px = do { f <- pf; x <- px; return (f x) }
+      -- note: the Poly.Lazy variants override this defn with a lazier one.
 
 infixl 6 `onFail`	-- not sure about precedence 6?
+infixl 3 `apply`
+infixl 3 `discard`
 
 {-
 -- Combinators we expect most concrete parser types to implement.
@@ -79,18 +82,16 @@ satisfy p = do{ x <- next
   --       its type cannot be expressed otherwise.
 -}
 
-infixl 3 `apply`
--- | Apply a parsed function to a parsed value.
---   Rather like ordinary function application lifted into parsers.
-apply :: PolyParse p => p (a->b) -> p a -> p b
-pf `apply` px = do { f <- pf; x <- px; return (f x) }
-  -- note: the Poly.Lazy variants override this defn with a lazier one.
+-- | When a simple fail is not strong enough, use failBad for emphasis.
+--   An emphasised (severe) error cannot be overridden by choice
+--   operators.
+failBad :: PolyParse p => String -> p a
+failBad e = commit (fail e)
 
-infixl 3 `discard`
 -- | @x `discard` y@ parses both x and y, but discards the result of y.
 --   Rather like @const@ lifted into parsers.
 discard :: PolyParse p => p a -> p b -> p a
-px `discard` py = do { x <- px; _ <- py; return x }
+px `discard` py = do { x <- px; return (const x) `apply` py; }
 
 -- | @adjustErrBad@ is just like @adjustErr@ except it also raises the
 --   severity of the error.
@@ -116,13 +117,12 @@ indent n = unlines . map (replicate n ' ' ++) . lines
 optional :: PolyParse p => p a -> p (Maybe a)
 optional p = fmap Just p `onFail` return Nothing
 
--- | 'exactly n p' parses a precise number of items, n, using the parser
---   p, in sequence.
+-- | 'exactly n p' parses precisely n items, using the parser p, in sequence.
 exactly :: PolyParse p => Int -> p a -> p [a]
 exactly 0 p = return []
-exactly n p = do x <- p
-                 xs <- exactly (n-1) p
-                 return (x:xs)
+exactly n p = return (:) `apply`  (p `adjustErr` (("When expecting exactly "
+                                                    ++show n++" more items")++))
+                         `apply`  exactly (n-1) p
 
 -- | 'many p' parses a list of elements with individual parser p.
 --   Cannot fail, since an empty list is a valid return value.
@@ -132,8 +132,7 @@ many p = many1 p `onFail` return []
 -- | Parse a non-empty list of items.
 many1 :: PolyParse p => p a -> p [a]
 many1 p = do { x <- p `adjustErr` (("In a sequence:\n"++). indent 2)
-             ; xs <- many p
-             ; return (x:xs)
+             ; return (x:) `apply` many p
              }
 --       `adjustErr` ("When looking for a non-empty sequence:\n\t"++)
 
@@ -144,8 +143,7 @@ sepBy p sep = do sepBy1 p sep `onFail` return []
 -- | Parse a non-empty list of items separated by discarded junk.
 sepBy1 :: PolyParse p => p a -> p sep -> p [a]
 sepBy1 p sep = do { x <- p
-                  ; xs <- many (do {sep; p})
-                  ; return (x:xs)
+                  ; return (x:) `apply` many (do {sep; p})
                   }
          `adjustErr` ("When looking for a non-empty sequence with separators:\n\t"++)
  
@@ -157,18 +155,16 @@ bracketSep open sep close p =
        `onFail`
     do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
        ; x <- p  `adjustErr` ("After first bracket in a group:\n\t"++)
-       ; xs <- many (do {sep; p})
-       ; close   `adjustErrBad` ("When looking for closing bracket:\n\t"++)
-       ; return (x:xs)
+       ; return (x:)
+           `apply` manyFinally (do {sep; p})
+              (close `adjustErrBad` ("When looking for closing bracket:\n\t"++))
        }
 
 -- | Parse a bracketed item, discarding the brackets.
 bracket :: PolyParse p => p bra -> p ket -> p a -> p a
 bracket open close p = do
     do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
-       ; x <- p
-       ; close   `adjustErrBad` ("Missing closing bracket:\n\t"++)
-       ; return x
+       ; p `discard` (close `adjustErrBad` ("Missing closing bracket:\n\t"++))
        }
 
 -- | 'manyFinally e t' parses a possibly-empty sequence of e's,
@@ -177,11 +173,18 @@ bracket open close p = do
 --   element, so it raises both possible errors.
 manyFinally :: PolyParse p => p a -> p z -> p [a]
 manyFinally p t =
+    (many p `discard` t)
+      `onFail`
+    oneOf' [ ("sequence terminator", do { t; return [] } )
+           , ("item in a sequence",  do { p; return [] } )
+           ]
+{-
+manyFinally p t =
     do { xs <- many p
        ; oneOf' [ ("sequence terminator", do { t; return () } )
                 , ("item in a sequence",  do { p; return () } )
                 ]
        ; return xs
        }
-
+-}
 ------------------------------------------------------------------------

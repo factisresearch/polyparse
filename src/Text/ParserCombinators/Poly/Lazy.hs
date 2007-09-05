@@ -6,30 +6,16 @@ module Text.ParserCombinators.Poly.Lazy
     -- ** basic parsers
   , next	-- :: Parser t t
   , satisfy	-- :: (t->Bool) -> Parser t t
-    -- some defns from 'Base' are overridden here, because they depend
+    -- one defn from 'Base' is overridden here, because it depends
     -- on the representation of the Lazy parser monad
-  , apply	-- :: Parser t (a->b) -> Parser t a -> Parser t b
   , manyFinally	-- :: Parser t a -> Parser t z -> Parser t [a]
-    -- ... and some other, more general defns from 'Base' are overridden here,
-    -- because they use the redefined combinators listed just above!
-  , discard	-- :: Parser t a -> Parser t z -> Parser t a
-  , exactly	-- :: Int -> Parser t a -> Parser t [a]
-  , many	-- :: Parser t a -> Parser t [a]
-  , many1	-- :: Parser t a -> Parser t [a]
-  , sepBy	-- :: Parser t a -> Parser t z -> Parser t [a]
-  , sepBy1	-- :: Parser t a -> Parser t z -> Parser t [a]
-  , bracketSep	-- :: Parser t bra -> Parser t sep -> Parser t ket
-		--     -> Parser t a -> Parser t [a]
-  , bracket	-- :: Parser t bra -> Parser t ket -> Parser t a -> Parser t a
     -- ** Re-parsing
   , reparse	-- :: [t] -> Parser t ()
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base
   ) where
 
-import Text.ParserCombinators.Poly.Base hiding
-       ( apply, discard, exactly, many, many1, sepBy, sepBy1
-       , bracketSep, bracket, manyFinally )
+import Text.ParserCombinators.Poly.Base hiding ( manyFinally )
 
 #if __GLASGOW_HASKELL__
 import Control.Exception hiding (bracket)
@@ -76,7 +62,6 @@ instance Monad (Parser t) where
 
 
 instance PolyParse (Parser t) where
-    failBad msg          = P (\ts-> (throwE msg, ts))
     commit (P p)         = P (\ts-> case p ts of
                                       (Left e, ts') -> (throwE e, ts')
                                       right         -> right )
@@ -100,6 +85,17 @@ instance PolyParse (Parser t) where
                                            in p ts
                            right        -> right )
             showErr (name,err) = name++":\n"++indent 2 err
+    -- | This version of `apply`
+    --   is strict in the result of the function parser, but
+    --   lazy in the result of the argument parser.  (Argument laziness is
+    --   the distinctive feature over other implementations.)
+    (P pf) `apply` (P px) = P (\ts->
+        case pf ts of
+          (Left msg, ts') -> (Left msg, ts')
+          (Right f,  ts') -> let (x',ts'') = px ts'
+                                 x = case x' of { Right x -> x
+                                                ; Left e -> throwE e }
+                             in (Right (f x), ts'') )
 
 -- | Next token
 next = P (\ts-> case ts of
@@ -111,20 +107,6 @@ satisfy :: (t->Bool) -> Parser t t
 satisfy p = do{ x <- next
               ; if p x then return x else fail "Parse.satisfy: failed"
               }
-
--- | Apply a parsed function to a parsed value.  This version
---   is strict in the result of the function parser, but
---   lazy in the result of the argument parser.  (Argument laziness is
---   the distinctive feature over other implementations.)
-apply :: Parser t (a->b) -> Parser t a -> Parser t b
---pf `apply` px = do { f <- pf; x <- px; return (f x) }
--- Needs to be lazier!  Must not force the argument value too early. 
-(P pf) `apply` (P px) = P (\ts->
-    case pf ts of
-      (Left msg, ts') -> (Left msg, ts')
-      (Right f,  ts') -> let (x',ts'') = px ts'
-                             x = case x' of { Right x -> x; Left e -> throwE e }
-                         in (Right (f x), ts'') )
 
 -- | 'manyFinally e t' parses a possibly-empty sequence of e's,
 --   terminated by a t.  Any parse failures could be due either to
@@ -140,61 +122,6 @@ manyFinally pp@(P p) pt@(P t) = P (\ts ->
         (Right x, ts') ->
             let (tail,ts'') = runParser (manyFinally pp pt) ts'
             in (Right (x:tail), ts'') )
-
-infixl 3 `discard`
--- | @x `discard` y@ parses both x and y, but discards the result of y.
---   Rather like @const@ lifted into parsers.
-discard :: PolyParse p => p a -> p b -> p a
-px `discard` py = do { x <- px; return (const x) `apply` py }
-
--- | 'exactly n p' parses a precise number of items, n, using the parser
---   p, in sequence.
-exactly :: PolyParse p => Int -> p a -> p [a]
-exactly 0 p = return []
-exactly n p = return (:) `apply` p `apply` exactly (n-1) p
-
--- | 'many p' parses a list of elements with individual parser p.
---   Cannot fail, since an empty list is a valid return value.
-many :: PolyParse p => p a -> p [a]
-many p = many1 p `onFail` return []
-
--- | Parse a non-empty list of items.
-many1 :: PolyParse p => p a -> p [a]
-many1 p = do { x <- p `adjustErr` (("In a sequence:\n"++). indent 2)
-             ; return (x:) `apply` many p
-             }
---       `adjustErr` ("When looking for a non-empty sequence:\n\t"++)
-
--- | Parse a list of items separated by discarded junk.
-sepBy :: PolyParse p => p a -> p sep -> p [a] 
-sepBy p sep = do sepBy1 p sep `onFail` return []
-
--- | Parse a non-empty list of items separated by discarded junk.
-sepBy1 :: PolyParse p => p a -> p sep -> p [a]
-sepBy1 p sep = do { x <- p
-                  ; return (x:) `apply` many (do {sep; p})
-                  }
-   `adjustErr` ("When looking for a non-empty sequence with separators:\n\t"++)
-
--- | Parse a list of items, discarding the start, end, and separator
---   items.
-bracketSep :: PolyParse p => p bra -> p sep -> p ket -> p a -> p [a]
-bracketSep open sep close p = 
-    do { open; close; return [] }
-       `onFail`
-    do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
-       ; x <- p  `adjustErr` ("After first bracket in a group:\n\t"++)
-       ; return (x:)
-           `apply` manyFinally (do {sep; p})
-              (close `adjustErrBad` ("When looking for closing bracket:\n\t"++))
-       }
-
--- | Parse a bracketed item, discarding the brackets.
-bracket :: PolyParse p => p bra -> p ket -> p a -> p a
-bracket open close p = do
-    do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
-       ; p `discard` (close `adjustErrBad` ("Missing closing bracket:\n\t"++))
-       }
 
 
 ------------------------------------------------------------------------

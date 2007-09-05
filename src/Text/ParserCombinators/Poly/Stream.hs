@@ -54,7 +54,6 @@ instance Monad (Parser t) where
     fail e       = P (\ts-> (Left (False,e), ts))
 
 instance PolyParse (Parser t) where
-    failBad msg          = P (\ts-> (Left (True,msg), ts))
     commit (P p)         = P (\ts-> case p ts of
                                       (Left (_,e), ts') -> (Left (True,e), ts')
                                       right             -> right )

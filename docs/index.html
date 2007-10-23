@@ -71,6 +71,35 @@ widely-used parser libraries available elsewhere.
      useful for large structures like e.g. XML trees.
 <li> <b>Text.ParserCombinators.PolyStateLazy</b>  combines PolyState and
      PolyLazy.
+<li> <b>Text.ParserCombinators.Poly.Base</b>
+     Following on from the basic Poly combinators, it became clear that
+     all of the variations share a lot in common, and that many of the
+     combinators are indeed implemented identically.  To reduce code
+     duplication in the library, we now provide a class-based interface
+     here.  The actual implementations for strict, lazy, and so on, are
+     instances of the class, defined in modules at the same level in the
+     hierarchy (e.g. T.P.Poly.Lazy etc).
+<li> <b>Text.ParserCombinators.Poly.Plain</b>
+     The class instance for ordinary, strict, parsers, with arbitrary
+     token type.
+<li> <b>Text.ParserCombinators.Poly.Lazy</b>
+     The class instance for lazy parsers, with arbitrary token type.
+<li> <b>Text.ParserCombinators.Poly.State</b>
+     The class instance for strict parsers, with arbitrary token type
+     and running state.
+<li> <b>Text.ParserCombinators.Poly.StateLazy</b>
+     The class instance for lazy parsers, with arbitrary token type
+     and running state.
+<li> <b>Text.ParserCombinators.Poly.Stream</b>
+     The class instance for strict parsers, where input tokens arrive
+     in a Stream datatype rather than a list.
+<li> <b>Text.ParserCombinators.Poly.NoLeak.Plain</b>
+     An experimental implementation of strict parsers, attempting to
+     avoid a particular space leak associated with the choice
+     combinator.
+<li> <b>Text.ParserCombinators.Poly.NoLeak.Lazy</b>
+<li> <b>Text.ParserCombinators.Poly.NoLeak.State</b>
+<li> <b>Text.ParserCombinators.Poly.NoLeak.StateLazy</b>
 <li> <b>Text.Parse</b>  The Text.Read class from Haskell'98 is widely
      recognised to have many problems.  It is inefficient.  If a read
      fails, there is no indication of why.  Worst of all, a read failure
@@ -148,7 +177,18 @@ Please edit the wiki if you discover any nice tricks!
     http://www.cs.york.ac.uk/fp/darcs/polyparse</tt>
 
 <p>
-<b>Released version:</b><br>
+<b>Current released version:</b><br>
+polyparse-1.1, release date 2007.10.23<br>
+By HTTP:
+<a href="http://www.cs.york.ac.uk/fp/polyparse-1.1.tar.gz">.tar.gz</a>,
+<a href="http://www.cs.york.ac.uk/fp/polyparse-1.1.zip">.zip</a>.
+<br>
+By FTP: 
+<a href="ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/">
+ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/</a>
+
+<p>
+<b>Older versions:</b><br>
 polyparse-1.0, release date 2007.01.26<br>
 By HTTP:
 <a href="http://www.cs.york.ac.uk/fp/polyparse-1.0.tar.gz">.tar.gz</a>,
@@ -188,12 +228,18 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
 <p>
+Version 1.1 much improves the laziness characteristics of the Poly*
+combinators.  There are also a lot of new implementations of the Poly*
+parser types, all of which attempt to preserve exactly the same
+combinator interface, so it is easy to switch between them.
+
+<p>
 Version 1.00 is the first release of polyparse as a separate package.
 It was previously part of the HaXml suite.  HaXml continues to use
 polyparse, but polyparse will be useful more widely.  If you are looking
 for examples of the usage of polyparse, the implementations of
-Text.XML.HaXml.Parse and Text.XML.HaXml.XmlContent are two good places
-to look.
+Text.XML.HaXml.Parse, Text.XML.HaXml.ParseLazy, and
+Text.XML.HaXml.XmlContent are good places to look.
 
 <br>
 <a href="changelog.html">Complete Changelog</a><br>
@@ -249,6 +295,7 @@ operator.  This can be tricky.
 <li><a href="http://www.cs.uu.nl/wiki/HUT/ParserCombinators">Doaitse
 Swierstra's UU_Parse.</a>
 An all-singing, all-dancing parsing library.  Deeply sophisticated.
+Allows on-line results, which is closely related to lazy parsing.
 
 <li><a href="http://cvs.haskell.org/Hugs/pages/libraries/base/Text-ParserCombinators-ReadP.html">Koen Claessen's ReadP.</a>
 This is a different proposed replacement for the standard Haskell'98

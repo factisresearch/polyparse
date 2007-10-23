@@ -44,5 +44,18 @@ What this package contains:
 	PolyState	arbitrary token type + running state.
 	PolyLazy	arbitrary token type + lazy return of results.
 	PolyStateLazy	arbitrary token type + running state + lazy results.
+  src/Text/ParserCombinators/Poly
+	Base		A class-based interface to more specific parser types.
+	Plain		The instance for simple polymorphic parsers.
+	Lazy		The instance for lazy polymorphic parsers.
+	State		The instance for strict polymorphic parsers with state.
+	StateLazy	The instance for lazy polymorphic parsers with state.
+	Stream		An experimental instance for stream-based parsers.
+  src/Text/ParserCombinators/Poly/NoLeak
+			An experimental attempt to plug more space leaks.
+	Plain		The instance for simple non-leaking parsers.
+	Lazy		The instance for lazy non-leaking parsers.
+	State		The instance for strict non-leaking parsers with state.
+	StateLazy	The instance for lazy non-leaking parsers with state.
 
 ----

@@ -24,12 +24,12 @@ set AR=C:\DEV\MinGW\bin\ar.exe
 set LD=C:\DEV\ghc\ghc-%GHCVER%\gcc-lib\ld.exe
 
 rem    Source directory for polyparse:
-set SRC=C:\DEV\Haskell\lib\polyparse-1.10\src
+set SRC=C:\DEV\Haskell\lib\polyparse-1.1\src
 
 rem    Two very long lines (500-600 chars) follow here.  
 rem    They should not need changing.
-set SRCS=Text/ParserCombinators/Poly.hs Text/ParserCombinators/PolyState.hs Text/ParserCombinators/TextParser.hs Text/ParserCombinators/PolyLazy.hs Text/ParserCombinators/PolyStateLazy.hs
-set OBJS=Text/ParserCombinators/Poly.o Text/ParserCombinators/PolyState.o Text/ParserCombinators/TextParser.o Text/ParserCombinators/PolyLazy.o Text/ParserCombinators/PolyStateLazy.o
+set SRCS=Text/ParserCombinators/Poly.hs Text/ParserCombinators/PolyState.hs Text/ParserCombinators/TextParser.hs Text/ParserCombinators/PolyLazy.hs Text/ParserCombinators/PolyStateLazy.hs Text/ParserCombinators/Poly/Base.hs Text/ParserCombinators/Poly/Plain.hs Text/ParserCombinators/Poly/State.hs Text/ParserCombinators/Poly/Lazy.hs Text/ParserCombinators/Poly/StateLazy.hs Text/ParserCombinators/Poly/NoLeak/Plain.hs Text/ParserCombinators/Poly/NoLeak/State.hs Text/ParserCombinators/Poly/NoLeak/Lazy.hs Text/ParserCombinators/Poly/NoLeak/StateLazy.hs
+set OBJS=Text/ParserCombinators/Poly.o Text/ParserCombinators/PolyState.o Text/ParserCombinators/TextParser.o Text/ParserCombinators/PolyLazy.o Text/ParserCombinators/PolyStateLazy.o Text/ParserCombinators/Poly/Base.o Text/ParserCombinators/Poly/Plain.o Text/ParserCombinators/Poly/State.o Text/ParserCombinators/Poly/Lazy.o Text/ParserCombinators/Poly/StateLazy.o Text/ParserCombinators/Poly/NoLeak/Plain.o Text/ParserCombinators/Poly/NoLeak/State.o Text/ParserCombinators/Poly/NoLeak/Lazy.o Text/ParserCombinators/Poly/NoLeak/StateLazy.o
 
 
 rem -- Get on with the real work --
@@ -44,7 +44,7 @@ if "%GHCVER%"=="6.6"   COPY polyparse.cabal %SRC%\pkg.conf
 if "%GHCVER%"=="6.6.1" COPY polyparse.cabal %SRC%\pkg.conf
 if "%GHCVER%"=="6.6.2" COPY polyparse.cabal %SRC%\pkg.conf
 cd %SRC%
-%GHC% --make -cpp -i. -package-name polyparse-1.00 %SRCS%
+%GHC% --make -cpp -i. -package-name polyparse-1.1 %SRCS%
 %AR% r libHSpolyparse.a %OBJS%
 
 rem -- Create library file for GHCi
@@ -89,7 +89,7 @@ goto Exit
 
 rem -- Remove GHC package for polyparse --
 :Remove
-%GHCPKG% --remove-package polyparse-1.00
+%GHCPKG% --remove-package polyparse-1.1
 
 goto Exit
 

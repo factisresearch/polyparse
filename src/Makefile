@@ -1,5 +1,5 @@
 SOFTWARE = polyparse
-VERSION = 1.0
+VERSION = 1.1
 
 LIBSRCS = \
 	Text/ParserCombinators/HuttonMeijer.hs \
@@ -8,6 +8,15 @@ LIBSRCS = \
 	Text/ParserCombinators/PolyState.hs \
 	Text/ParserCombinators/PolyLazy.hs \
 	Text/ParserCombinators/PolyStateLazy.hs \
+        Text/ParserCombinators/Poly/Base.hs \
+        Text/ParserCombinators/Poly/Plain.hs \
+        Text/ParserCombinators/Poly/Lazy.hs \
+        Text/ParserCombinators/Poly/State.hs \
+        Text/ParserCombinators/Poly/StateLazy.hs \
+        Text/ParserCombinators/Poly/NoLeak/Plain.hs \
+        Text/ParserCombinators/Poly/NoLeak/Lazy.hs \
+        Text/ParserCombinators/Poly/NoLeak/State.hs \
+        Text/ParserCombinators/Poly/NoLeak/StateLazy.hs \
 	Text/Parse.hs \
 
 LIBOBJS = $(patsubst %.hs, %.o, $(LIBSRCS))

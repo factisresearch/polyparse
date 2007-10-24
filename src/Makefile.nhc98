@@ -15,15 +15,15 @@ SRCS	= \
 	Text/ParserCombinators/PolyState.hs \
 	Text/ParserCombinators/PolyLazy.hs \
 	Text/ParserCombinators/PolyStateLazy.hs \
-        src/Text/ParserCombinators/Poly/Base.hs \
-        src/Text/ParserCombinators/Poly/Plain.hs \
-        src/Text/ParserCombinators/Poly/Lazy.hs \
-        src/Text/ParserCombinators/Poly/State.hs \
-        src/Text/ParserCombinators/Poly/StateLazy.hs \
-        src/Text/ParserCombinators/Poly/NoLeak/Plain.hs \
-        src/Text/ParserCombinators/Poly/NoLeak/Lazy.hs \
-        src/Text/ParserCombinators/Poly/NoLeak/State.hs \
-        src/Text/ParserCombinators/Poly/NoLeak/StateLazy.hs \
+        Text/ParserCombinators/Poly/Base.hs \
+        Text/ParserCombinators/Poly/Plain.hs \
+        Text/ParserCombinators/Poly/Lazy.hs \
+        Text/ParserCombinators/Poly/State.hs \
+        Text/ParserCombinators/Poly/StateLazy.hs \
+        Text/ParserCombinators/Poly/NoLeak/Plain.hs \
+        Text/ParserCombinators/Poly/NoLeak/Lazy.hs \
+        Text/ParserCombinators/Poly/NoLeak/State.hs \
+        Text/ParserCombinators/Poly/NoLeak/StateLazy.hs \
 	Text/Parse.hs \
 
 

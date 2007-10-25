@@ -23,6 +23,11 @@ module Text.ParserCombinators.Poly.Base
   , manyFinally -- :: PolyParse p => p a -> p z -> p [a]
   ) where
 
+#ifdef __NHC__
+default (Integer,Double,[])	-- hack to avoid bizarre type defaulting error
+instance PolyParse []
+#endif
+
 -- | The @PolyParse@ class is an abstraction over all the current
 --   concrete representations of monadic parser combinators in this
 --   package.  The common feature is two-level error-handling.

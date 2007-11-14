@@ -79,7 +79,7 @@ haddock:
 		done
 	for file in $(SRCS); \
 		do $(CPP) -D__NHC__ $$file >$$file.uncpp; \
-		   HsColour -anchorHTML $$file >docs/haddock/`dirname $$file`/`basename $$file .hs`.html; \
+		   HsColour -anchor -html $$file >docs/haddock/`dirname $$file`/`basename $$file .hs`.html; \
 		done
 	haddock --html --title=$(SOFTWARE) --odir=docs/haddock \
 		--package=$(SOFTWARE) \

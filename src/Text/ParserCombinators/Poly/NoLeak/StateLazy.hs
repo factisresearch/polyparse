@@ -95,7 +95,7 @@ instance PolyParse (Parser s t) where
                            r@(Committed _)      -> r )
             showErr (name,err) = name++":\n"++indent 2 err
 
-    -- | Apply a parsed function to a parsed value.  This version
+    --   Apply a parsed function to a parsed value.  This version
     --   is strict in the result of the function parser, but
     --   lazy in the result of the argument parser.  (Argument laziness is
     --   the distinctive feature over other implementations.)

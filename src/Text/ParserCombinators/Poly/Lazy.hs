@@ -85,7 +85,7 @@ instance PolyParse (Parser t) where
                                            in p ts
                            right        -> right )
             showErr (name,err) = name++":\n"++indent 2 err
-    -- | This version of `apply`
+    --   This version of "apply"
     --   is strict in the result of the function parser, but
     --   lazy in the result of the argument parser.  (Argument laziness is
     --   the distinctive feature over other implementations.)

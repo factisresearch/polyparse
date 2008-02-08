@@ -16,7 +16,7 @@ module Text.Parse
   , module Text.ParserCombinators.Poly
   ) where
 
-import Char (isSpace)
+import Char (isSpace,toLower,isDigit,isOctDigit,isHexDigit,digitToInt)
 import List (intersperse)
 import Text.ParserCombinators.Poly
 
@@ -60,7 +60,8 @@ parseByRead name =
 word :: TextParser String
 word = P (\s-> case lex s of
                    []         -> (Left (False,"no input? (impossible)"), s)
-                   [("",s')]  -> (Left (False,"no input?"), s')
+                   [("","")]  -> (Left (False,"no input?"), "")
+                   [("",s')]  -> (Left (False,"lexing failed?"), s')
                    ((x,s'):_) -> (Right x, s') )
 
 -- | Ensure that the next input word is the given string.  (Note the input
@@ -106,17 +107,67 @@ enumeration typ cs = oneOf (map (\c-> do { isWord (show c); return c }) cs)
 ------------------------------------------------------------------------
 -- Instances for all the Standard Prelude types.
 
+-- Numeric types
+parseSigned :: Real a => TextParser a -> TextParser a
+parseSigned p = do '-' <- next; commit (fmap negate p)
+                `onFail`
+                do p
+
+parseInt :: (Integral a) => String ->
+                            a -> (Char -> Bool) -> (Char -> Int) -> TextParser a
+parseInt base radix isDigit digitToInt = go 0
+  where go acc = do cs <- many1 (satisfy isDigit)
+                    return (foldl1 (\n d-> n*radix+d)
+                                   (map (fromIntegral.digitToInt) cs))
+                 `adjustErr` (++("\nexpected one or more "++base++" digits"))
+parseDec = parseInt "decimal" 10 Char.isDigit    Char.digitToInt
+parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
+parseHex = parseInt "hex"     16 Char.isHexDigit Char.digitToInt
+
+parseFloat :: (RealFrac a) => TextParser a
+parseFloat = do ds <- many1 (satisfy isDigit)
+                frac <- (do '.' <- next
+                            many (satisfy isDigit)
+                         `onFail` return [] )
+                exp  <- (do 'e' <- fmap toLower next
+                            commit (do '+' <- next; parseDec
+                                    `onFail`
+                                    parseSigned parseDec) )
+                ( return . fromRational . (* (10^^(exp - length frac)))
+                  . (%1) .  (\ (Right x)->x) . fst
+                  . runParser parseDec ) (ds++frac)
+             `onFail`
+             do w <- many (satisfy (not.isSpace))
+                case map toLower w of
+                  "nan"      -> return (0/0)
+                  "infinity" -> return (1/0)
+                  _          -> fail "expected a floating point number"
+
+parseLitChar :: TextParser Char
+parseLitChar = do '\'' <- next
+                  c <- next
+                  case c of '\\' -> fail "not implemented"
+                            '\'' -> fail "expected a literal char, got ''"
+                            _    -> do '\'' <- next
+                                       return c
+
 -- Basic types
 instance Parse Int where
-    parse = parseByRead "Int"
+ -- parse = parseByRead "Int"	-- convert from Integer, deals with minInt
+    parse = fmap fromInteger $ parseSigned parseDec
 instance Parse Integer where
-    parse = parseByRead "Integer"
+ -- parse = parseByRead "Integer"
+    parse = parseSigned parseDec
 instance Parse Float where
-    parse = parseByRead "Float"
+ -- parse = parseByRead "Float"
+    parse = parseSigned parseFloat
 instance Parse Double where
-    parse = parseByRead "Double"
+ -- parse = parseByRead "Double"
+    parse = parseSigned parseFloat
 instance Parse Char where
     parse = parseByRead "Char"
+ -- parse = do { w <- word; if head w == '\'' then readLitChar (tail w)
+ --                                           else fail "expected a char" }
  -- parseList = bracket (isWord "\"") (satisfy (=='"'))
  --                     (many (satisfy (/='"')))
 	-- not totally correct for strings...

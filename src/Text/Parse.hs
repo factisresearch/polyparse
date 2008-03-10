@@ -18,6 +18,7 @@ module Text.Parse
 
 import Char (isSpace,toLower,isDigit,isOctDigit,isHexDigit,digitToInt)
 import List (intersperse)
+import Ratio
 import Text.ParserCombinators.Poly
 
 ------------------------------------------------------------------------
@@ -120,6 +121,7 @@ parseInt base radix isDigit digitToInt = go 0
                     return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral.digitToInt) cs))
                  `adjustErr` (++("\nexpected one or more "++base++" digits"))
+parseDec, parseOct, parseHex :: (Integral a) => TextParser a
 parseDec = parseInt "decimal" 10 Char.isDigit    Char.digitToInt
 parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
 parseHex = parseInt "hex"     16 Char.isHexDigit Char.digitToInt

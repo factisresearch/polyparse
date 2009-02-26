@@ -117,7 +117,8 @@ parseSigned p = do '-' <- next; commit (fmap negate p)
 parseInt :: (Integral a) => String ->
                             a -> (Char -> Bool) -> (Char -> Int) -> TextParser a
 parseInt base radix isDigit digitToInt = go 0
-  where go acc = do cs <- many1 (satisfy isDigit)
+  where go acc = do many (satisfy isSpace)
+                    cs <- many1 (satisfy isDigit)
                     return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral.digitToInt) cs))
                  `adjustErr` (++("\nexpected one or more "++base++" digits"))
@@ -127,9 +128,11 @@ parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
 parseHex = parseInt "hex"     16 Char.isHexDigit Char.digitToInt
 
 parseFloat :: (RealFrac a) => TextParser a
-parseFloat = do ds <- many1 (satisfy isDigit)
+parseFloat = do many (satisfy isSpace)
+                ds <- many1 (satisfy isDigit)
                 frac <- (do '.' <- next
                             many (satisfy isDigit)
+                              `adjustErrBad` (++"expected digit after .")
                          `onFail` return [] )
                 exp  <- (do 'e' <- fmap toLower next
                             commit (do '+' <- next; parseDec
@@ -139,14 +142,16 @@ parseFloat = do ds <- many1 (satisfy isDigit)
                   . (%1) .  (\ (Right x)->x) . fst
                   . runParser parseDec ) (ds++frac)
              `onFail`
-             do w <- many (satisfy (not.isSpace))
+             do many (satisfy isSpace)
+                w <- many (satisfy (not.isSpace))
                 case map toLower w of
                   "nan"      -> return (0/0)
                   "infinity" -> return (1/0)
                   _          -> fail "expected a floating point number"
 
 parseLitChar :: TextParser Char
-parseLitChar = do '\'' <- next
+parseLitChar = do many (satisfy isSpace)
+                  '\'' <- next
                   c <- next
                   case c of '\\' -> fail "not implemented"
                             '\'' -> fail "expected a literal char, got ''"

@@ -12,11 +12,20 @@ module Text.Parse
   , field	-- :: Parse a => String -> TextParser a
   , constructors-- :: [(String,TextParser a)] -> TextParser a
   , enumeration -- :: Show a => String -> [a] -> TextParser a
+    -- ** Parsers for literal numerics and characters
+  , parseSigned
+  , parseInt
+  , parseDec
+  , parseOct
+  , parseHex
+  , parseFloat
+  , parseLitChar
     -- ** Re-export all the more general combinators from Poly too
   , module Text.ParserCombinators.Poly
   ) where
 
-import Char (isSpace,toLower,isDigit,isOctDigit,isHexDigit,digitToInt)
+import Char (isSpace,toLower,isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
+            ,ord,chr)
 import List (intersperse)
 import Ratio
 import Text.ParserCombinators.Poly
@@ -148,13 +157,107 @@ parseFloat = do ds <- many1 (satisfy isDigit)
                   _          -> fail "expected a floating point number"
 
 parseLitChar :: TextParser Char
-parseLitChar = do many (satisfy isSpace)
-                  '\'' <- next
+parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
                   c <- next
-                  case c of '\\' -> fail "not implemented"
+                  char <- case c of
+                            '\\' -> next >>= escape
                             '\'' -> fail "expected a literal char, got ''"
-                            _    -> do '\'' <- next
-                                       return c
+                            _    -> return c
+                  '\'' <- next `adjustErrBad` (++"literal char has no final '")
+                  return char
+  where
+    escape 'a'  = return '\a'
+    escape 'b'  = return '\b'
+    escape 'f'  = return '\f'
+    escape 'n'  = return '\n'
+    escape 'r'  = return '\r'
+    escape 't'  = return '\t'
+    escape 'v'  = return '\v'
+    escape '\\' = return '\\'
+    escape '"'  = return '"'
+    escape '\'' = return '\''
+    escape '^'  = do ctrl <- next
+                     if ctrl >= '@' && ctrl <= '_'
+                       then return (chr (ord ctrl - ord '@'))
+                       else fail ("literal char ctrl-escape malformed: \\^"
+                                   ++[ctrl])
+    escape d | isDigit d
+                = fmap chr $  parseDec (Char.digitToInt d)
+    escape 'o'  = fmap chr $  parseOct 0
+    escape 'x'  = fmap chr $  parseHex 0
+    escape c | isUpper c
+                = mnemonic c
+    escape c    = fail ("unrecognised escape sequence in literal char: \\"++[c])
+
+    mnemonic 'A' = do 'C' <- next; 'K' <- next; return '\ACK'
+                   `wrap` "'\\ACK'"
+    mnemonic 'B' = do 'E' <- next; 'L' <- next; return '\BEL'
+                   `onFail`
+                   do 'S' <- next; return '\BS'
+                   `wrap` "'\\BEL' or '\\BS'"
+    mnemonic 'C' = do 'R' <- next; return '\CR'
+                   `onFail`
+                   do 'A' <- next; 'N' <- next; return '\CAN'
+                   `wrap` "'\\CR' or '\\CAN'"
+    mnemonic 'D' = do 'E' <- next; 'L' <- next; return '\DEL'
+                   `onFail`
+                   do 'L' <- next; 'E' <- next; return '\DLE'
+                   `onFail`
+                   do 'C' <- next; ( do '1' <- next; return '\DC1'
+                                     `onFail`
+                                     do '2' <- next; return '\DC2'
+                                     `onFail`
+                                     do '3' <- next; return '\DC3'
+                                     `onFail`
+                                     do '4' <- next; return '\DC4' )
+                   `wrap` "'\\DEL' or '\\DLE' or '\\DC[1..4]'"
+    mnemonic 'E' = do 'T' <- next; 'X' <- next; return '\ETX'
+                   `onFail`
+                   do 'O' <- next; 'T' <- next; return '\EOT'
+                   `onFail`
+                   do 'N' <- next; 'Q' <- next; return '\ENQ'
+                   `onFail`
+                   do 'T' <- next; 'B' <- next; return '\ETB'
+                   `onFail`
+                   do 'M' <- next; return '\EM'
+                   `onFail`
+                   do 'S' <- next; 'C' <- next; return '\ESC'
+                   `wrap` "one of '\\ETX' '\\EOT' '\\ENQ' '\\ETB' '\\EM' or '\\ESC'"
+    mnemonic 'F' = do 'F' <- next; return '\FF'
+                   `onFail`
+                   do 'S' <- next; return '\FS'
+                   `wrap` "'\\FF' or '\\FS'"
+    mnemonic 'G' = do 'S' <- next; return '\GS'
+                   `wrap` "'\\GS'"
+    mnemonic 'H' = do 'T' <- next; return '\HT'
+                   `wrap` "'\\HT'"
+    mnemonic 'L' = do 'F' <- next; return '\LF'
+                   `wrap` "'\\LF'"
+    mnemonic 'N' = do 'U' <- next; 'L' <- next; return '\NUL'
+                   `onFail`
+                   do 'A' <- next; 'K' <- next; return '\NAK'
+                   `wrap` "'\\NUL' or '\\NAK'"
+    mnemonic 'R' = do 'S' <- next; return '\RS'
+                   `wrap` "'\\RS'"
+    mnemonic 'S' = do 'O' <- next; 'H' <- next; return '\SOH'
+                   `onFail`
+                   do 'O' <- next; return '\SO'
+                   `onFail`
+                   do 'T' <- next; 'X' <- next; return '\STX'
+                   `onFail`
+                   do 'I' <- next; return '\SI'
+                   `onFail`
+                   do 'Y' <- next; 'N' <- next; return '\SYN'
+                   `onFail`
+                   do 'U' <- next; 'B' <- next; return '\SUB'
+                   `onFail`
+                   do 'P' <- next; return '\SP'
+                   `wrap` "'\\SOH' '\\SO' '\\STX' '\\SI' '\\SYN' '\\SUB' or '\\SP'"
+    mnemonic 'U' = do 'S' <- next; return '\US'
+                   `wrap` "'\\US'"
+    mnemonic 'V' = do 'T' <- next; return '\VT'
+                   `wrap` "'\\VT'"
+    wrap p s = p `onFail` fail ("expected literal char "++s)
 
 -- Basic types
 instance Parse Int where
@@ -171,7 +274,8 @@ instance Parse Double where
  -- parse = parseByRead "Double"
     parse = do many (satisfy isSpace); parseSigned parseFloat
 instance Parse Char where
-    parse = parseByRead "Char"
+--  parse = parseByRead "Char"
+    parse = do many (satisfy isSpace); parseLitChar
  -- parse = do { w <- word; if head w == '\'' then readLitChar (tail w)
  --                                           else fail "expected a char" }
  -- parseList = bracket (isWord "\"") (satisfy (=='"'))

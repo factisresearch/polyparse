@@ -1,7 +1,6 @@
 name:		polyparse
-version:	1.1
-ghc-options:	-DVERSION="1.1"
-cc-options:	-DVERSION="1.1"
+version:	1.2
+cpp-options:	-DVERSION="1.2"
 nhc98-options:	-K6M
 license:	LGPL
 license-file:	COPYRIGHT
@@ -36,4 +35,5 @@ exposed-modules:
 	Text.Parse
 hs-source-dir:	src
 build-depends:	base, haskell98
+build-type:	Simple
 extensions:	CPP

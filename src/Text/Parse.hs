@@ -115,35 +115,33 @@ parseSigned p = do '-' <- next; commit (fmap negate p)
                 do p
 
 parseInt :: (Integral a) => String ->
-                            a -> (Char -> Bool) -> (Char -> Int) -> TextParser a
-parseInt base radix isDigit digitToInt = go 0
-  where go acc = do many (satisfy isSpace)
-                    cs <- many1 (satisfy isDigit)
+                            a -> (Char -> Bool) -> (Char -> Int) ->
+                            a -> TextParser a
+parseInt base radix isDigit digitToInt n = go n
+  where go acc = do cs <- many1 (satisfy isDigit)
                     return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral.digitToInt) cs))
                  `adjustErr` (++("\nexpected one or more "++base++" digits"))
-parseDec, parseOct, parseHex :: (Integral a) => TextParser a
+parseDec, parseOct, parseHex :: (Integral a) => a -> TextParser a
 parseDec = parseInt "decimal" 10 Char.isDigit    Char.digitToInt
 parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
 parseHex = parseInt "hex"     16 Char.isHexDigit Char.digitToInt
 
 parseFloat :: (RealFrac a) => TextParser a
-parseFloat = do many (satisfy isSpace)
-                ds <- many1 (satisfy isDigit)
+parseFloat = do ds <- many1 (satisfy isDigit)
                 frac <- (do '.' <- next
                             many (satisfy isDigit)
                               `adjustErrBad` (++"expected digit after .")
                          `onFail` return [] )
                 exp  <- (do 'e' <- fmap toLower next
-                            commit (do '+' <- next; parseDec
+                            commit (do '+' <- next; parseDec 0
                                     `onFail`
-                                    parseSigned parseDec) )
+                                    parseSigned (parseDec 0) ))
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) .  (\ (Right x)->x) . fst
-                  . runParser parseDec ) (ds++frac)
+                  . runParser (parseDec 0) ) (ds++frac)
              `onFail`
-             do many (satisfy isSpace)
-                w <- many (satisfy (not.isSpace))
+             do w <- many (satisfy (not.isSpace))
                 case map toLower w of
                   "nan"      -> return (0/0)
                   "infinity" -> return (1/0)
@@ -161,16 +159,17 @@ parseLitChar = do many (satisfy isSpace)
 -- Basic types
 instance Parse Int where
  -- parse = parseByRead "Int"	-- convert from Integer, deals with minInt
-    parse = fmap fromInteger $ parseSigned parseDec
+    parse = fmap fromInteger $
+              do many (satisfy isSpace); parseSigned (parseDec 0)
 instance Parse Integer where
  -- parse = parseByRead "Integer"
-    parse = parseSigned parseDec
+    parse = do many (satisfy isSpace); parseSigned (parseDec 0)
 instance Parse Float where
  -- parse = parseByRead "Float"
-    parse = parseSigned parseFloat
+    parse = do many (satisfy isSpace); parseSigned parseFloat
 instance Parse Double where
  -- parse = parseByRead "Double"
-    parse = parseSigned parseFloat
+    parse = do many (satisfy isSpace); parseSigned parseFloat
 instance Parse Char where
     parse = parseByRead "Char"
  -- parse = do { w <- word; if head w == '\'' then readLitChar (tail w)

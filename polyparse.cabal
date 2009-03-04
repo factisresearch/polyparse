@@ -20,18 +20,11 @@ exposed-modules:
 	Text.ParserCombinators.HuttonMeijer,
 	Text.ParserCombinators.HuttonMeijerWallace,
 	Text.ParserCombinators.Poly,
-	Text.ParserCombinators.PolyState,
-	Text.ParserCombinators.PolyLazy,
-	Text.ParserCombinators.PolyStateLazy,
 	Text.ParserCombinators.Poly.Base,
 	Text.ParserCombinators.Poly.Plain,
 	Text.ParserCombinators.Poly.Lazy,
 	Text.ParserCombinators.Poly.State,
 	Text.ParserCombinators.Poly.StateLazy,
-	Text.ParserCombinators.Poly.NoLeak.Plain,
-	Text.ParserCombinators.Poly.NoLeak.State,
-	Text.ParserCombinators.Poly.NoLeak.Lazy,
-	Text.ParserCombinators.Poly.NoLeak.StateLazy,
 	Text.Parse
 hs-source-dir:	src
 build-depends:	base, haskell98

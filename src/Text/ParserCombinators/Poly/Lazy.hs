@@ -1,4 +1,4 @@
-module Text.ParserCombinators.Poly.NoLeak.Lazy
+module Text.ParserCombinators.Poly.Lazy
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
   , runParser	-- :: Parser t a -> [t] -> (Either String a, [t])

@@ -1,11 +1,10 @@
-module Text.ParserCombinators.Poly.NoLeak.StateLazy
+module Text.ParserCombinators.Poly.State
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
   , runParser	-- :: Parser s t a -> s -> [t] -> (Either String a, s, [t])
     -- ** basic parsers
   , next	-- :: Parser s t t
   , satisfy	-- :: (t->Bool) -> Parser s t t
-  , manyFinally	-- :: Parser s t a -> Parser s t z -> Parser s t [a]
     -- ** State-handling
   , stUpdate    -- :: (s->s) -> Parser s t ()
   , stQuery     -- :: (s->a) -> Parser s t a
@@ -17,17 +16,7 @@ module Text.ParserCombinators.Poly.NoLeak.StateLazy
   ) where
 
 
-import Text.ParserCombinators.Poly.Base hiding (manyFinally)
-
-#if __GLASGOW_HASKELL__
-import Control.Exception hiding (bracket)
-throwE :: String -> a
-throwE msg = throw (ErrorCall msg)
-#else
-throwE :: String -> a
-throwE msg = error msg
-#endif
-
+import Text.ParserCombinators.Poly.Base
 
 -- | This @Parser@ datatype is a fairly generic parsing monad with error
 --   reporting.  It can be used for arbitrary token types, not just
@@ -47,16 +36,16 @@ instance Functor (Result z s) where
     fmap f (Committed r)   = Committed (fmap f r)
 
 -- | Apply a parser to an input token sequence.
-runParser :: Parser s t a -> s -> [t] -> (a, s, [t])
-runParser (P p) = \s -> fromResult . p s
+runParser :: Parser s t a -> s -> [t] -> (Either String a, s, [t])
+runParser (P p) = \s-> resultToEither . p s
   where
-    fromResult :: Result z s a -> (a, s, z)
-    fromResult (Success z s a)  =  (a, s, z)
-    fromResult (Failure z s e)  =  throwE e
-    fromResult (Committed r)    =  fromResult r
+    resultToEither :: Result z s a -> (Either String a, s, z)
+    resultToEither (Success z s a) =  (Right a, s, z)
+    resultToEither (Failure z s e) =  (Left e,  s, z)
+    resultToEither (Committed r)   =  resultToEither r
 
 instance Functor (Parser s t) where
-    fmap f (P p) = P (\s -> fmap f . p s)
+    fmap f (P p) = P (\s-> fmap f . p s)
 
 instance Monad (Parser s t) where
     return x     = P (\s ts-> Success ts s x)
@@ -79,7 +68,7 @@ instance PolyParse (Parser s t) where
     (P p) `onFail` (P q) = P (\s ts-> continue s ts $ p s ts)
       where
         continue s ts (Failure _ _ _) = q s ts
-     -- continue _ _  (Committed r)   = r	-- no, remain Committed
+    --  continue _ _  (Committed r)   = r	-- no, remain Committed
         continue _ _  r               = r
 
     oneOf' = accum []
@@ -95,50 +84,10 @@ instance PolyParse (Parser s t) where
                            r@(Committed _)      -> r )
             showErr (name,err) = name++":\n"++indent 2 err
 
-    --   Apply a parsed function to a parsed value.  This version
-    --   is strict in the result of the function parser, but
-    --   lazy in the result of the argument parser.  (Argument laziness is
-    --   the distinctive feature over other implementations.)
-    (P pf) `apply` px = P (\s-> continue . pf s)
-      where
-        continue (Success z s f) = let (x,s',z') = runParser px s z
-                                   in Success z' s' (f x)
-        continue (Failure z s e) = Failure z s e
-        continue (Committed r)   = Committed (continue r)
-
-manyFinally :: Parser s t a -> Parser s t z -> Parser s t [a]
-{-
-manyFinally pp@(P p) pt@(P t) = P (\s ts -> item s ts (p s ts))
-    where
-      item _ _  (Success ts s x) = success ts s x
-      item s ts (Failure _ _ e)  = terminate (t s ts)
-      item s ts (Committed r)    = Committed (within r)
-
-      success ts s x =
-            let (tail,s',ts') = runParser (manyFinally pp pt) s ts
-            in Success ts' s' (x:tail)
-
-      terminate (Success ts s _) = Success ts s []
-      terminate (Failure ts s e) = Failure ts s e
-      terminate (Committed r)    = Committed (terminate r)
-
-      within (Success ts s x)    = success ts s x
-      within (Failure ts s e)    = Failure ts s e
-      within (Committed r)       = within r
--}
-
-manyFinally p z =
-    (do x <- p; return (x:) `apply` manyFinally p z)
-      `onFail`
-    (do z; return [])
-      `onFail`
-    oneOf' [ ("item in sequence",    (do p; return []))
-           , ("sequence terminator", (do z; return [])) ]
-
 ------------------------------------------------------------------------
 next :: Parser s t t
 next = P (\s ts-> case ts of
-                  []      -> Failure []  s "Ran out of input (EOF)"
+                  []      -> Failure [] s "Ran out of input (EOF)"
                   (t:ts') -> Success ts' s t )
 
 satisfy :: (t->Bool) -> Parser s t t
@@ -159,6 +108,7 @@ stQuery f   = P (\s ts-> Success ts s (f s))
 -- | Deliver the entire internal state.
 stGet      :: Parser s t s
 stGet       = P (\s ts-> Success ts s s)
+
 
 ------------------------------------------------------------------------
 -- | Push some tokens back onto the front of the input stream and reparse.

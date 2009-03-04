@@ -73,18 +73,19 @@ class Parse a where
 parseByRead :: Read a => String -> TextParser a
 parseByRead name =
     P (\s-> case reads s of
-                []       -> (Left (False,"no parse, expected a "++name), s)
-                [(a,s')] -> (Right a, s')
-                _        -> (Left (False,"ambiguous parse, expected a "++name), s)
+                []       -> Failure s ("no parse, expected a "++name)
+                [(a,s')] -> Success s' a
+                _        -> Failure s ("ambiguous parse, expected a "++name)
       )
 
 -- | One lexical chunk (Haskell-style lexing).
 word :: TextParser String
 word = P (\s-> case lex s of
-                   []         -> (Left (False,"no input? (impossible)"), s)
-                   [("","")]  -> (Left (False,"no input?"), "")
-                   [("",s')]  -> (Left (False,"lexing failed?"), s')
-                   ((x,s'):_) -> (Right x, s') )
+                   []         -> Failure s  ("no input? (impossible)")
+                   [("","")]  -> Failure "" ("no input?")
+                   [("",s')]  -> Failure s  ("lexing failed?")
+                   ((x,s'):_) -> Success s' x
+         )
 
 -- | Ensure that the next input word is the given string.  (Note the input
 --   is lexed as haskell, so wordbreaks at spaces, symbols, etc.)
@@ -310,13 +311,12 @@ instance Parse Ordering where
 -- Structural types
 instance Parse () where
     parse = P p
-      where p []       = (Left (False,"no input: expected a ()"), [])
+      where p []       = Failure [] "no input: expected a ()"
             p ('(':cs) = case dropWhile isSpace cs of
-                             (')':s) -> (Right (), s)
-                             _       -> (Left (False,"Expected ) after ("), cs)
+                             (')':s) -> Success s ()
+                             _       -> Failure cs "Expected ) after ("
             p (c:cs) | isSpace c = p cs
-                     | otherwise = ( Left (False,"Expected a (), got "++show c)
-                                     , (c:cs))
+                     | otherwise = Failure (c:cs) ("Expected a (), got "++show c)
 
 instance (Parse a, Parse b) => Parse (a,b) where
     parse = do{ isWord "(" `adjustErr` ("Opening a 2-tuple\n"++)

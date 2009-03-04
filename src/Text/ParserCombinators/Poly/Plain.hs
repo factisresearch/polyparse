@@ -1,6 +1,7 @@
 module Text.ParserCombinators.Poly.Plain
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
+  , Result(..)	-- internal to the Parser Monad.
   , runParser	-- :: Parser t a -> [t] -> (Either String a, [t])
     -- ** basic parsers
   , next	-- :: Parser t t
@@ -21,9 +22,10 @@ import Text.ParserCombinators.Poly.Base
 --   instead)
 newtype Parser t a = P ([t] -> Result [t] a)
 
---   A return type like Either, that distinguishes not only between
+-- | A return type like Either, that distinguishes not only between
 --   right and wrong answers, but also has commitment, so that a failure
---   cannot be undone.
+--   cannot be undone.  This should only be used for writing very primitive
+--   parsers - really it is an internal detail of the library.
 data Result z a = Success   z a
                 | Failure   z String
                 | Committed (Result z a)

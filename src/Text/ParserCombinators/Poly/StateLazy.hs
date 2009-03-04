@@ -1,6 +1,7 @@
 module Text.ParserCombinators.Poly.StateLazy
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
+  , Result(..)	-- internal to the parser monad
   , runParser	-- :: Parser s t a -> s -> [t] -> (Either String a, s, [t])
     -- ** basic parsers
   , next	-- :: Parser s t t
@@ -35,8 +36,10 @@ throwE msg = error msg
 --   instead)
 newtype Parser s t a = P (s -> [t] -> Result [t] s a)
 
---   A return type like Either, that distinguishes not only between
+-- | A return type like Either, that distinguishes not only between
 --   right and wrong answers, but also has gradations of wrongness.
+--   This should only be used for writing very primitive
+--   parsers - really it is an internal detail of the library.
 data Result z s a = Success    z s a
                   | Failure    z s String
                   | Committed  (Result z s a)

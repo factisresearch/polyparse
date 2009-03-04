@@ -58,7 +58,7 @@ class Parse a where
     parsePrec :: Int -> TextParser a
     parsePrec _ = parens False parse
     -- | Parsing a list of items by default accepts the [] and comma syntax,
-    --   except when the list is really a character string using "".
+    --   except when the list is really a character string using \"\".
     parseList :: TextParser [a]	-- only to distinguish [] and ""
     parseList  = do { isWord "[]"; return [] }
                    `onFail`

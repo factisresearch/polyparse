@@ -1,28 +1,20 @@
 SOFTWARE = polyparse
-VERSION  = 1.1
+VERSION  = 1.2
 
 CPP      = cpp -traditional
 #CPP     = cpphs --text 	# useful e.g. on MacOS X
 
-DIRS = Text Text/ParserCombinators Text/ParserCombinators/Poly \
-	Text/ParserCombinators/Poly/NoLeak
+DIRS = Text Text/ParserCombinators Text/ParserCombinators/Poly
 
 SRCS = \
 	src/Text/ParserCombinators/HuttonMeijer.hs \
 	src/Text/ParserCombinators/HuttonMeijerWallace.hs \
 	src/Text/ParserCombinators/Poly.hs \
-	src/Text/ParserCombinators/PolyState.hs \
-	src/Text/ParserCombinators/PolyLazy.hs \
-	src/Text/ParserCombinators/PolyStateLazy.hs \
 	src/Text/ParserCombinators/Poly/Base.hs \
 	src/Text/ParserCombinators/Poly/Plain.hs \
 	src/Text/ParserCombinators/Poly/Lazy.hs \
 	src/Text/ParserCombinators/Poly/State.hs \
 	src/Text/ParserCombinators/Poly/StateLazy.hs \
-	src/Text/ParserCombinators/Poly/NoLeak/Plain.hs \
-	src/Text/ParserCombinators/Poly/NoLeak/Lazy.hs \
-	src/Text/ParserCombinators/Poly/NoLeak/State.hs \
-	src/Text/ParserCombinators/Poly/NoLeak/StateLazy.hs \
 	src/Text/Parse.hs
 
 TOOLSRCS = \

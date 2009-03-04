@@ -26,7 +26,7 @@ exposed-modules:
 	Text.ParserCombinators.Poly.State,
 	Text.ParserCombinators.Poly.StateLazy,
 	Text.Parse
-hs-source-dir:	src
+hs-source-dirs:	src
 build-depends:	base, haskell98
 build-type:	Simple
 extensions:	CPP

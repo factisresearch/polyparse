@@ -13,6 +13,29 @@
 </center>
 <hr>
 
+<h3>Changes in polyparse-1.2</h3>
+<p>
+<ul>
+<li>Improves the Text.Parse implementation significantly.  Where
+    previously all the parsers for builtin basic datatype (Int,Float,Char)
+    were just thin wrappers over the H'98 Read instances, now they are all
+    proper parsers, therefore they should (a) be faster; (b) give better
+    error messages.
+<li>Reduced the number of implementation variations to choose from.
+    In particular, NoLeak has become the default implementation, and
+    the previous default has been dropped (because it space-leaks).
+<!--
+<li>[desired] The class interface providing common operations across all
+    implementations, now need be no slower than the previous
+    cut-n-pasted interface, due to compiler specialisation of all the
+    instances.
+<li>[desired] New combinators for parsing infix structures, with
+    associativity and precedence information.
+<li>[desired] Multiple layers of bracketing can be parsed in linear time,
+    rather than the previous exponential solution.
+-->
+</ul>
+
 <h3>Changes in polyparse-1.1</h3>
 <p>
 <ul>

@@ -155,15 +155,13 @@ parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
 parseHex = parseInt "hex"     16 Char.isHexDigit Char.digitToInt
 
 parseFloat :: (RealFrac a) => TextParser a
-parseFloat = do ds <- many1 (satisfy isDigit)
+parseFloat = do ds   <- many1 (satisfy isDigit)
                 frac <- (do '.' <- next
                             many (satisfy isDigit)
                               `adjustErrBad` (++"expected digit after .")
                          `onFail` return [] )
-                exp  <- (do 'e' <- fmap toLower next
-                            commit (do '+' <- next; parseDec 0
-                                    `onFail`
-                                    parseSigned (parseDec 0) ))
+                exp  <- if null frac then exponent
+                                     else exponent `onFail` return 0
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) .  (\ (Right x)->x) . fst
                   . runParser (parseDec 0) ) (ds++frac)
@@ -173,6 +171,10 @@ parseFloat = do ds <- many1 (satisfy isDigit)
                   "nan"      -> return (0/0)
                   "infinity" -> return (1/0)
                   _          -> fail "expected a floating point number"
+  where exponent = do 'e' <- fmap toLower next
+                      commit (do '+' <- next; parseDec 0
+                              `onFail`
+                              parseSigned (parseDec 0) )
 
 parseLitChar :: TextParser Char
 parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")

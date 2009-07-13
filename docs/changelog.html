@@ -13,7 +13,16 @@
 </center>
 <hr>
 
-<h3>Changes in polyparse-1.2</h3>
+<h3>Changes in polyparse-1.4</h3>
+<p>
+<ul>
+<li>Bugfix: in Text.Parse, parseInt, parseDec, parseOct, and parseHex had an
+    extra spurious argument that was unused, so it has been removed (API
+    change).  In addition parseLitChar relied on the non-existent use of
+    that argument, so it has been fixed too.
+</ul>
+
+<h3>Changes in polyparse-1.3</h3>
 <p>
 <ul>
 <li>Bugfix: Text.Parse.parseFloat now accepts ordinary floating point

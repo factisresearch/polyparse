@@ -160,8 +160,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                             many (satisfy isDigit)
                               `adjustErrBad` (++"expected digit after .")
                          `onFail` return [] )
-                exp  <- if null frac then exponent
-                                     else exponent `onFail` return 0
+                exp  <- exponent `onFail` return 0
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) .  (\ (Right x)->x) . fst
                   . runParser parseDec ) (ds++frac)

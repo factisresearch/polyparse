@@ -143,13 +143,13 @@ parseSigned p = do '-' <- next; commit (fmap negate p)
 
 parseInt :: (Integral a) => String ->
                             a -> (Char -> Bool) -> (Char -> Int) ->
-                            a -> TextParser a
-parseInt base radix isDigit digitToInt n = go n
-  where go acc = do cs <- many1 (satisfy isDigit)
+                            TextParser a
+parseInt base radix isDigit digitToInt =
+                 do cs <- many1 (satisfy isDigit)
                     return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral.digitToInt) cs))
                  `adjustErr` (++("\nexpected one or more "++base++" digits"))
-parseDec, parseOct, parseHex :: (Integral a) => a -> TextParser a
+parseDec, parseOct, parseHex :: (Integral a) => TextParser a
 parseDec = parseInt "decimal" 10 Char.isDigit    Char.digitToInt
 parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
 parseHex = parseInt "hex"     16 Char.isHexDigit Char.digitToInt
@@ -164,7 +164,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                                      else exponent `onFail` return 0
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) .  (\ (Right x)->x) . fst
-                  . runParser (parseDec 0) ) (ds++frac)
+                  . runParser parseDec ) (ds++frac)
              `onFail`
              do w <- many (satisfy (not.isSpace))
                 case map toLower w of
@@ -172,9 +172,9 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                   "infinity" -> return (1/0)
                   _          -> fail "expected a floating point number"
   where exponent = do 'e' <- fmap toLower next
-                      commit (do '+' <- next; parseDec 0
+                      commit (do '+' <- next; parseDec
                               `onFail`
-                              parseSigned (parseDec 0) )
+                              parseSigned parseDec )
 
 parseLitChar :: TextParser Char
 parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
@@ -202,9 +202,9 @@ parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
                        else fail ("literal char ctrl-escape malformed: \\^"
                                    ++[ctrl])
     escape d | isDigit d
-                = fmap chr $  parseDec (Char.digitToInt d)
-    escape 'o'  = fmap chr $  parseOct 0
-    escape 'x'  = fmap chr $  parseHex 0
+                = fmap chr $  (reparse [d] >> parseDec)
+    escape 'o'  = fmap chr $  parseOct
+    escape 'x'  = fmap chr $  parseHex
     escape c | isUpper c
                 = mnemonic c
     escape c    = fail ("unrecognised escape sequence in literal char: \\"++[c])
@@ -283,10 +283,10 @@ parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
 instance Parse Int where
  -- parse = parseByRead "Int"	-- convert from Integer, deals with minInt
     parse = fmap fromInteger $
-              do many (satisfy isSpace); parseSigned (parseDec 0)
+              do many (satisfy isSpace); parseSigned parseDec
 instance Parse Integer where
  -- parse = parseByRead "Integer"
-    parse = do many (satisfy isSpace); parseSigned (parseDec 0)
+    parse = do many (satisfy isSpace); parseSigned parseDec
 instance Parse Float where
  -- parse = parseByRead "Float"
     parse = do many (satisfy isSpace); parseSigned parseFloat

@@ -45,6 +45,8 @@ widely-used parser libraries available elsewhere.
      The <a href="http://repetae.net/~john/computer/haskell/DrIFT">DrIFT</a>
      tool can derive instances of the Parse class for you
      automatically.  (Use the syntax <tt>{-! derive : Parse !-}</tt>)
+<li> <b>Text.Parse.ByteString</b>  is a variant of Text.Parse, where
+     the input is simply ByteString instead of String.
 <li> <b>Text.ParserCombinators.Poly</b>
      Currently re-exports Text.ParserCombinators.Poly.Plain.
      The name Poly comes from the arbitrary token type.  Thus, you can
@@ -86,6 +88,8 @@ widely-used parser libraries available elsewhere.
      hierarchy (e.g. T.P.Poly.Lazy etc).  Every individual variation
      re-exports these base combinators, so there should be no need to
      import this module directly.
+<li> <b>Text.ParserCombinators.Poly.ByteString</b>  is a specialised
+     version of the Poly parser for ByteString input only.
 <li> <b>Text.ParserCombinators.HuttonMeijer</b>  The most venerable of all
      monadic parser combinator libraries, this version dates from 1996.
      Originally distributed with Gofer, then Hugs, as ParseLib.  It uses

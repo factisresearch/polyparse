@@ -24,7 +24,7 @@ module Text.Parse.ByteString
   , parseFloat
   , parseLitChar
     -- ** Re-export all the more general combinators from Poly too
-  , module Text.ParserCombinators.Poly
+  , module Text.ParserCombinators.Poly.ByteString
     -- ** ByteStrings and Strings as whole entities
   , allAsByteString
   , allAsString
@@ -93,7 +93,7 @@ word = P (\s-> case lex (BS.unpack s) of
                    []         -> Failure s  ("no input? (impossible)")
                    [("","")]  -> Failure s ("no input?")
                    [("",_)]   -> Failure s  ("lexing failed?")
-                   ((x,_):_)  -> Success (BS.drop (length x) s) x
+                   ((x,_):_)  -> Success (BS.drop (fromIntegral (length x)) s) x
          )
 
 -- | Ensure that the next input word is the given string.  (Note the input
@@ -185,7 +185,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                 exp  <- exponent `onFail` return 0
                 ( return . fromRational . (* (10^^(exp - length frac)))
                   . (%1) .  (\ (Right x)->x) . fst
-                  . runParser parseDec ) (ds++frac)
+                  . runParser parseDec ) (BS.pack (ds++frac))
              `onFail`
              do w <- many (satisfy (not.isSpace))
                 case map toLower w of
@@ -223,7 +223,7 @@ parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
                        else fail ("literal char ctrl-escape malformed: \\^"
                                    ++[ctrl])
     escape d | isDigit d
-                = fmap chr $  (reparse [d] >> parseDec)
+                = fmap chr $  (reparse (BS.pack [d]) >> parseDec)
     escape 'o'  = fmap chr $  parseOct
     escape 'x'  = fmap chr $  parseHex
     escape c | isUpper c

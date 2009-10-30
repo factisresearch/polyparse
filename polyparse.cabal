@@ -29,6 +29,6 @@ exposed-modules:
 	Text.Parse.ByteString
 	Text.Parse
 hs-source-dirs:	src
-build-depends:	base, haskell98
+build-depends:	base, haskell98, bytestring
 build-type:	Simple
 extensions:	CPP

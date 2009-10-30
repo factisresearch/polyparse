@@ -26,7 +26,7 @@ module Text.Parse
   ) where
 
 import Char (isSpace,toLower,isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
-            ,ord,chr)
+            ,isAlpha,isAlphaNum,ord,chr)
 import List (intersperse)
 import Ratio
 import Text.ParserCombinators.Poly
@@ -78,9 +78,62 @@ parseByRead name =
                 _        -> Failure s ("ambiguous parse, expected a "++name)
       )
 
--- | One lexical chunk (Haskell-style lexing).
+-- | One lexical chunk.  This is Haskell'98-style lexing - the result
+--   should match Prelude.lex apart from better error-reporting.
 word :: TextParser String
-word = P (\s-> case lex s of
+word = P p
+  where
+    p ""       = Failure "" "end of input"
+    p (c:s)    | isSpace c = p (dropWhile isSpace s)
+    p ('\'':s) = let (P lit) = parseLitChar in fmap show (lit ('\'':s))
+    p ('"':s)  = lexString "\"" s
+             where lexString acc ('"':s)      = Success s (reverse ('"':acc))
+                   lexString acc ('\\':'"':s) = lexString ("\"\\"++acc) s
+                   lexString acc (c:s)        = lexString (c:acc) s
+                   lexString acc []           = Failure [] ("end of input in "
+                                                           ++"string literal "
+                                                           ++acc)
+    p ('0':'x':s) = Success t ('0':'x':ds) where (ds,t) = span isHexDigit s
+    p ('0':'X':s) = Success t ('0':'X':ds) where (ds,t) = span isHexDigit s
+    p ('0':'o':s) = Success t ('0':'o':ds) where (ds,t) = span isOctDigit s
+    p ('0':'O':s) = Success t ('0':'O':ds) where (ds,t) = span isOctDigit s
+    p (c:s) | isSingle c = Success s [c]
+            | isSym    c = let (sym,t) = span isSym s in Success t (c:sym)
+            | isIdInit c = let (nam,t) = span isIdChar s in Success t (c:nam)
+            | isDigit  c = let (ds,t)  = span isDigit s in
+                           lexFracExp (c:ds) t
+            | otherwise  = Failure (c:s) ("Bad character: "++show c)
+             where isSingle c  =  c `elem` ",;()[]{}`"
+                   isSym    c  =  c `elem` "!@#$%&*+./<=>?\\^|:-~"
+                   isIdInit c  =  isAlpha c || c == '_'
+                   isIdChar c  =  isAlphaNum c || c `elem` "_'"
+                   lexFracExp acc ('.':d:s) | isDigit d   =
+                                      lexExp (acc++'.':d:ds) t
+                                              where (ds,t) = span isDigit s
+                   lexFracExp acc s = lexExp acc s
+                   lexExp     acc (e:s) | e`elem`"eE" =
+                                      case s of
+                                        ('+':d:t) | isDigit d ->
+                                                    let (ds,u)=span isDigit t in
+                                                    Success u (acc++"e+"++d:ds)
+                                        ('-':d:t) | isDigit d ->
+                                                    let (ds,u)=span isDigit t in
+                                                    Success u (acc++"e-"++d:ds)
+                                        (d:t) |isDigit d ->
+                                                    let (ds,u)=span isDigit t in
+                                                    Success u (acc++"e"++d:ds)
+                                        _ -> Failure s ("missing +/-/digit "
+                                                       ++"after e in float "
+                                                       ++"literal: "
+                                                       ++show (acc++"e"++"..."))
+                   lexExp     acc s     = Success s acc
+
+
+
+-- | One lexical chunk (Haskell'98-style lexing - the result should match
+--   Prelude.lex apart from error-reporting).
+oldword :: TextParser String
+oldword = P (\s-> case lex s of
                    []         -> Failure s  ("no input? (impossible)")
                    [("","")]  -> Failure "" ("no input?")
                    [("",s')]  -> Failure s  ("lexing failed?")

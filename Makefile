@@ -1,5 +1,5 @@
 SOFTWARE = polyparse
-VERSION  = 1.3
+VERSION  = 1.4
 
 CPP      = cpp -traditional
 #CPP     = cpphs --text 	# useful e.g. on MacOS X

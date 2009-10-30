@@ -40,13 +40,8 @@ What this package contains:
 	HuttonMeijer		Early parser combinators from 1996.
 	HuttonMeijerWallace	Extended for arbitrary token type + running
 				state + error msgs.
-	Poly		Space-efficient combinators that allow arbitrary
-			token type.
-	PolyState	arbitrary token type + running state.
-	PolyLazy	arbitrary token type + lazy return of results.
-	PolyStateLazy	arbitrary token type + running state + lazy results.
-  src/Text/ParserCombinators/Poly
-	Base		A class-based interface to more specific parser types.
+  src/Text/ParserCombinators/Poly	Space-efficient parsers.
+	Base		A class-based interface.  Most combinators defined here.
 	Plain		The instance for simple polymorphic parsers.
 	Lazy		The instance for lazy polymorphic parsers.
 	State		The instance for strict polymorphic parsers with state.

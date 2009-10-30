@@ -22,6 +22,16 @@
     that argument, so it has been fixed too.
 <li>Bugfix: Text.Parse.parseFloat now accepts a plain integer as a float,
     to match the H'98 behaviour of readFloat.
+<li>New API: the primitive parser 'eof' is now available in all variations of
+    the Poly combinators.
+<li>New implementation of Text.Parse.word - it no longer uses the
+    Haskell'98 Prelude.lex, but provides its own proper lexer, with better
+    error messages.
+<li>New module: Text.ParserCombinators.Poly.ByteString is an instance of
+    the PolyParse class specialised to ByteString input, rather than being
+    polymorphic over the input token type.
+<li>New module: Text.Parse.ByteString, is like Text.Parse but with
+    ByteString input rather than String.
 </ul>
 
 <h3>Changes in polyparse-1.3</h3>

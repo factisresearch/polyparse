@@ -5,6 +5,7 @@ module Text.ParserCombinators.Poly.StateLazy
   , runParser	-- :: Parser s t a -> s -> [t] -> (Either String a, s, [t])
     -- ** basic parsers
   , next	-- :: Parser s t t
+  , eof		-- :: Parser s t ()
   , satisfy	-- :: (t->Bool) -> Parser s t t
   , manyFinally	-- :: Parser s t a -> Parser s t z -> Parser s t [a]
     -- ** State-handling
@@ -143,6 +144,11 @@ next :: Parser s t t
 next = P (\s ts-> case ts of
                   []      -> Failure []  s "Ran out of input (EOF)"
                   (t:ts') -> Success ts' s t )
+
+eof  :: Parser s t ()
+eof  = P (\s ts-> case ts of
+                  []      -> Success [] s ()
+                  (t:ts') -> Failure ts s "Expected end of input (eof)" )
 
 satisfy :: (t->Bool) -> Parser s t t
 satisfy pred = do { x <- next

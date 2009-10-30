@@ -5,6 +5,7 @@ module Text.ParserCombinators.Poly.Lazy
   , runParser	-- :: Parser t a -> [t] -> (Either String a, [t])
     -- ** basic parsers
   , next	-- :: Parser t t
+  , eof		-- :: Parser t ()
   , satisfy	-- :: (t->Bool) -> Parser t t
 
     -- ** re-parsing
@@ -111,6 +112,11 @@ next :: Parser t t
 next = P (\ts-> case ts of
                   []      -> Failure [] "Ran out of input (EOF)"
                   (t:ts') -> Success ts' t )
+
+eof  :: Parser t ()
+eof  = P (\ts-> case ts of
+                  []      -> Success [] ()
+                  (t:ts') -> Failure ts "Expected end of input (EOF)" )
 
 satisfy :: (t->Bool) -> Parser t t
 satisfy pred = do { x <- next

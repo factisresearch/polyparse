@@ -34,7 +34,8 @@ What this package contains:
   examples/		Some small examples of how the libraries are used.
 
   src/Text
-	Parse		A replacement for the Prelude Read class.
+	Parse			A replacement for the Prelude Read class.
+	Parse/ByteString	Like Text.Parse, except input is ByteString.
   src/Text/ParserCombinators
 	HuttonMeijer		Early parser combinators from 1996.
 	HuttonMeijerWallace	Extended for arbitrary token type + running
@@ -50,12 +51,6 @@ What this package contains:
 	Lazy		The instance for lazy polymorphic parsers.
 	State		The instance for strict polymorphic parsers with state.
 	StateLazy	The instance for lazy polymorphic parsers with state.
-	Stream		An experimental instance for stream-based parsers.
-  src/Text/ParserCombinators/Poly/NoLeak
-			An experimental attempt to plug more space leaks.
-	Plain		The instance for simple non-leaking parsers.
-	Lazy		The instance for lazy non-leaking parsers.
-	State		The instance for strict non-leaking parsers with state.
-	StateLazy	The instance for lazy non-leaking parsers with state.
+	ByteString	An experimental instance for parsing from ByteString.
 
 ----

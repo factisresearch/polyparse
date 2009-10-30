@@ -1,91 +1,106 @@
 module Text.ParserCombinators.Poly.ByteString
   ( -- * The Parser datatype
-    Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
-  , runParser	-- :: Parser a -> ByteString -> (Either String a, ByteString)
+    Parser(P)
+  , Result(..)
+  , runParser
     -- ** basic parsers
-  , next	-- :: Parser Char
-  , satisfy	-- :: (Char->Bool) -> Parser Char
-
+  , next
+  , eof
+  , satisfy
     -- ** re-parsing
-  , reparse	-- :: [Char] -> Parser ()
+  , reparse
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base
   ) where
 
+
 import Text.ParserCombinators.Poly.Base
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as BS
-#if defined(__GLASGOW_HASKELL__)
-import GHC.Base (unsafeCoerce#)
-unsafeCoerce = unsafeCoerce#
-#else
-#endif
+import qualified Data.ByteString.Lazy.Char8 as BS
+import Data.ByteString.Lazy.Char8 (ByteString)
 
--- | This @Parser@ datatype is a parsing monad with error reporting.
---   It has fixed token type, namely Char stored in a ByteString, so
---   cannot really be called 'poly' in the sense of polymorphic tokens.
---   But in all other respects, this parser type follows the pattern,
---   e.g. by having two levels of errors.
-newtype Parser a = P (ByteString -> (EitherE String a, ByteString))
+-- | This @Parser@ datatype is a fairly generic parsing monad with error
+--   reporting.  It can be used for arbitrary token types, not just
+--   String input.  (If you require a running state, use module PolyState
+--   instead)
+newtype Parser a = P (ByteString -> Result ByteString a)
 
---   A return type like Either, that distinguishes not only between
---   right and wrong answers, but also has gradations of wrongness.
-type EitherE a b = Either (Bool,a) b
+-- | A return type like Either, that distinguishes not only between
+--   right and wrong answers, but also has commitment, so that a failure
+--   cannot be undone.  This should only be used for writing very primitive
+--   parsers - really it is an internal detail of the library.
+data Result z a = Success   z a
+                | Failure   z String
+                | Committed (Result z a)
+
+instance Functor (Result z) where
+    fmap f (Success z a) = Success z (f a)
+    fmap _ (Failure z e) = Failure z e
+    fmap f (Committed r) = Committed (fmap f r)
 
 -- | Apply a parser to an input token sequence.
 runParser :: Parser a -> ByteString -> (Either String a, ByteString)
-runParser (P p) =
-    (\ (e,ts)-> (case e of {Left (_,m)->Left m; Right m->Right m}, ts) )
-    . p
+runParser (P p) = resultToEither . p
+  where
+    resultToEither :: Result z a -> (Either String a, z)
+    resultToEither (Success z a)  =  (Right a, z)
+    resultToEither (Failure z e)  =  (Left e, z)
+    resultToEither (Committed r)  =  resultToEither r
 
 instance Functor Parser where
-    fmap f (P p) = P (\ts-> case p ts of
-                                (Left msg, ts') -> (Left msg,    ts')
-                                (Right x,  ts') -> (Right (f x), ts'))
+    fmap f (P p) = P (fmap f . p)
+
 instance Monad Parser where
-    return x     = P (\ts-> (Right x, ts))
-    (P f) >>= g  = P (\ts-> case f ts of
-                                (Left msg, ts') -> (Left msg, ts')
-                                (Right x,  ts') -> let (P g') = g x in g' ts')
-    fail e       = P (\ts-> (Left (False,e), ts))
+    return x     = P (\ts-> Success ts x)
+    fail e       = P (\ts-> Failure ts e)
+    (P f) >>= g  = P (continue . f)
+      where
+        continue (Success ts x)             = let (P g') = g x in g' ts
+        continue (Committed (Committed r))  = continue (Committed r)
+        continue (Committed r)              = Committed (continue r)
+        continue (Failure ts e)             = Failure ts e
 
 instance PolyParse Parser where
-    commit (P p)         = P (\ts-> case p ts of
-                                      (Left (_,e), ts') -> (Left (True,e), ts')
-                                      right             -> right )
-    (P p) `adjustErr` f  = P (\ts-> case p ts of
-                                 (Left (b,msg), ts') -> (Left (b,(f msg)), ts')
-                                 right               -> right )
-    (P p) `onFail` (P q) = P (\ts-> case p ts of
-                                      r@(Left (True,_), _) -> r
-                                      (Left _, _) -> q ts
-                                      right       -> right )
+    commit (P p)         = P (Committed . p)
+    (P p) `adjustErr` f  = P (adjust . p)
+      where
+        adjust (Failure z e) = Failure z (f e)
+        adjust (Committed r) = Committed (adjust r)
+        adjust  good         = good
+
+    (P p) `onFail` (P q) = P (\ts-> continue ts $ p ts)
+      where
+        continue ts (Failure _ _) = q ts
+    --  continue _  (Committed r) = r	-- no, remain Committed
+        continue _  r             = r
+
     oneOf' = accum []
       where accum errs [] =
-              case filter isBad errs of
-                [] ->  fail ("failed to parse any of the possible choices:\n"
+                fail ("failed to parse any of the possible choices:\n"
                             ++indent 2 (concatMap showErr (reverse errs)))
-                [(_,(_,e))] -> failBad e
-                es -> failBad ("one of the following failures occurred:\n"
-                              ++indent 2 (concatMap showErr (reverse es)))
             accum errs ((e,P p):ps) =
                 P (\ts-> case p ts of
-                           (Left err,_) -> let (P p) = accum ((e,err):errs) ps
-                                           in p ts
-                           right        -> right )
-            showErr (name,(_,err)) = name++":\n"++indent 2 err
-            isBad (_,(b,_)) = b
+                           Failure _ err ->
+                                       let (P p') = accum ((e,err):errs) ps
+                                       in p' ts
+                           r@(Success _ _)    -> r
+                           r@(Committed _)    -> r )
+            showErr (name,err) = name++":\n"++indent 2 err
 
--- next token
+------------------------------------------------------------------------
 next :: Parser Char
-next = P (\ts-> case BS.uncons ts of
-                  Nothing  -> (Left (False,"Ran out of input (EOF)"), BS.empty)
-                  Just (t,ts') -> (Right (unsafeCoerce t), ts') )
+next = P (\bs-> case BS.uncons bs of
+                Nothing -> Failure bs "Ran out of input (EOF)"
+                Just (c, bs') -> Success bs' c )
 
-satisfy :: (Char->Bool) -> Parser Char
-satisfy p = do{ x <- next
-              ; if p x then return x else fail "Parse.satisfy: failed"
-              }
+eof :: Parser ()
+eof = P (\bs -> if BS.null bs
+                then Success bs ()
+                else Failure bs "Expected end of input (EOF)" )
+
+satisfy :: (Char -> Bool) -> Parser Char
+satisfy f = do { x <- next
+               ; if f x then return x else fail "Parse.satisfy: failed"
+               }
 
 ------------------------------------------------------------------------
 -- | Push some tokens back onto the front of the input stream and reparse.
@@ -93,7 +108,7 @@ satisfy p = do{ x <- next
 --   user-parser recognises a macro use, it can lookup the macro
 --   expansion from the parse state, lex it, and then stuff the
 --   lexed expansion back down into the parser.
-reparse    :: [Char] -> Parser ()
-reparse ts  = P (\inp-> (Right (), (BS.pack ts `BS.append` inp)))
+reparse    :: ByteString -> Parser ()
+reparse ts  = P (\inp-> Success (ts `BS.append` inp) ())
 
 ------------------------------------------------------------------------

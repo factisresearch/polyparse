@@ -25,6 +25,8 @@ exposed-modules:
 	Text.ParserCombinators.Poly.Lazy,
 	Text.ParserCombinators.Poly.State,
 	Text.ParserCombinators.Poly.StateLazy,
+	Text.ParserCombinators.Poly.ByteString,
+	Text.Parse.ByteString
 	Text.Parse
 hs-source-dirs:	src
 build-depends:	base, haskell98

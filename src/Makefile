@@ -10,7 +10,9 @@ LIBSRCS = \
         Text/ParserCombinators/Poly/Lazy.hs \
         Text/ParserCombinators/Poly/State.hs \
         Text/ParserCombinators/Poly/StateLazy.hs \
+        Text/ParserCombinators/Poly/ByteString.hs \
 	Text/Parse.hs \
+	Text/Parse/ByteString.hs \
 
 LIBOBJS = $(patsubst %.hs, %.o, $(LIBSRCS))
 

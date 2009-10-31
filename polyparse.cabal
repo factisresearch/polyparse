@@ -1,7 +1,5 @@
 name:		polyparse
 version:	1.4
-cpp-options:	-DVERSION="1.4"
-nhc98-options:	-K6M
 license:	LGPL
 license-file:	COPYRIGHT
 author:		Malcolm Wallace <Malcolm.Wallace@cs.york.ac.uk>
@@ -16,19 +14,27 @@ description:
 	parsing, and so on.  Finally, Text.Parse is a proposed
 	replacement for the standard Read class, for better
 	deserialisation of Haskell values from Strings.
-exposed-modules:
-	Text.ParserCombinators.HuttonMeijer,
-	Text.ParserCombinators.HuttonMeijerWallace,
-	Text.ParserCombinators.Poly,
-	Text.ParserCombinators.Poly.Base,
-	Text.ParserCombinators.Poly.Plain,
-	Text.ParserCombinators.Poly.Lazy,
-	Text.ParserCombinators.Poly.State,
-	Text.ParserCombinators.Poly.StateLazy,
-	Text.ParserCombinators.Poly.ByteString,
-	Text.Parse.ByteString
-	Text.Parse
-hs-source-dirs:	src
-build-depends:	base, haskell98, bytestring
 build-type:	Simple
-extensions:	CPP
+cabal-version:  >=1.2
+
+library
+  hs-source-dirs:	src
+  build-depends:	base, haskell98
+  exposed-modules:
+        Text.ParserCombinators.HuttonMeijer,
+        Text.ParserCombinators.HuttonMeijerWallace,
+        Text.ParserCombinators.Poly,
+        Text.ParserCombinators.Poly.Base,
+        Text.ParserCombinators.Poly.Plain,
+        Text.ParserCombinators.Poly.Lazy,
+        Text.ParserCombinators.Poly.State,
+        Text.ParserCombinators.Poly.StateLazy,
+        Text.Parse
+  if impl(ghc)
+    build-depends:	bytestring
+    exposed-modules:
+        Text.ParserCombinators.Poly.ByteString,
+        Text.Parse.ByteString
+  cpp-options:		-DVERSION="1.4"
+  nhc98-options:	-K6M
+  extensions:		CPP

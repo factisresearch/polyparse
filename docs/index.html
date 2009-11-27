@@ -165,10 +165,10 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
-polyparse-1.3, release date 2009.03.09<br>
+polyparse-1.4, release date 2009.11.27<br>
 By HTTP:
-<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.3.tar.gz">.tar.gz</a>,
-<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.3.zip">.zip</a>.
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.tar.gz">.tar.gz</a>,
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.zip">.zip</a>.
 <br>
 By FTP: 
 <a href="ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/">
@@ -176,6 +176,11 @@ ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/</a>
 
 <p>
 <b>Older versions:</b><br>
+polyparse-1.3, release date 2009.03.09<br>
+By HTTP:
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.3.tar.gz">.tar.gz</a>,
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.3.zip">.zip</a>.
+<br>
 polyparse-1.2, release date 2009.03.04<br>
 By HTTP:
 <a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.2.tar.gz">.tar.gz</a>,
@@ -204,6 +209,10 @@ or later, and/or <em>nhc98-1.16/hmake-3.06</em> or later, and/or
 <em>Hugs98 (Sept 2003)</em> or later.  For more recent compilers,
 use the standard Cabal method of installation:
 <pre>
+    cabal install polyparse
+</pre>
+or
+<pre>
     runhaskell Setup.hs configure [--prefix=...] [--buildwith=...]
     runhaskell Setup.hs build
     runhaskell Setup.hs install
@@ -224,6 +233,11 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+<p>
+Version 1.4 has several bugfixes, improvements, and API additions.  See
+the <a href="changelog.html">complete changelog</a><br> for fuller
+details.  The main headline is new ByteString functionality.
+
 <p>
 Version 1.3 has a single bugfix: Text.Parse.parseFloat now accepts
 ordinary floating point notation, in addition to scientific (exponent)

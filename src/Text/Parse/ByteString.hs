@@ -6,6 +6,8 @@ module Text.Parse.ByteString
   , Parse(..)	-- instances: (), (a,b), (a,b,c), Maybe a, Either a, [a],
 		--            Int, Integer, Float, Double, Char, Bool
   , parseByRead	-- :: Read a => String -> TextParser a
+  , readByParse -- :: TextParser a -> ReadS a
+  , readsPrecByParsePrec -- :: (Int->TextParser a) -> Int -> ReadS a
     -- ** Combinators specific to string input, lexed haskell-style
   , word	-- :: TextParser String
   , isWord	-- :: String -> TextParser ()
@@ -86,6 +88,27 @@ parseByRead name =
                 [(a,s')] -> Success (BS.pack s') a
                 _        -> Failure s ("ambiguous parse, expected a "++name)
       )
+
+-- | If you have a TextParser for a type, you can easily make it into
+--   a Read instance, by throwing away any error messages.  Use of this
+--   wrapper function is NOT recommended with ByteString, because there
+--   is a lot of inefficiency in conversions to/from String.
+readByParse :: TextParser a -> ReadS a
+readByParse p = \inp->
+    case runParser p (BS.pack inp) of
+        (Left err,  rest) -> []
+        (Right val, rest) -> [(val, BS.unpack rest)]
+
+-- | If you have a TextParser for a type, you can easily make it into
+--   a Read instance, by throwing away any error messages.  Use of this
+--   wrapper function is NOT recommended with ByteString, because there
+--   is a lot of inefficiency in conversions to/from String.
+readsPrecByParsePrec :: (Int -> TextParser a) -> Int -> ReadS a
+readsPrecByParsePrec p = \prec inp->
+    case runParser (p prec) (BS.pack inp) of
+        (Left err,  rest) -> []
+        (Right val, rest) -> [(val, BS.unpack rest)]
+
 
 -- | One lexical chunk (Haskell-style lexing).
 word :: TextParser String

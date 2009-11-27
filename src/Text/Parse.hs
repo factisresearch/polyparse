@@ -5,6 +5,8 @@ module Text.Parse
   , Parse(..)	-- instances: (), (a,b), (a,b,c), Maybe a, Either a, [a],
 		--            Int, Integer, Float, Double, Char, Bool
   , parseByRead	-- :: Read a => String -> TextParser a
+  , readByParse -- :: TextParser a -> ReadS a
+  , readsPrecByParsePrec -- :: (Int->TextParser a) -> Int -> ReadS a
     -- ** Combinators specific to string input, lexed haskell-style
   , word	-- :: TextParser String
   , isWord	-- :: String -> TextParser ()
@@ -77,6 +79,22 @@ parseByRead name =
                 [(a,s')] -> Success s' a
                 _        -> Failure s ("ambiguous parse, expected a "++name)
       )
+
+-- | If you have a TextParser for a type, you can easily make it into
+--   a Read instance, by throwing away any error messages.
+readByParse :: TextParser a -> ReadS a
+readByParse p = \inp->
+    case runParser p inp of
+        (Left err,  rest) -> []
+        (Right val, rest) -> [(val,rest)]
+
+-- | If you have a TextParser for a type, you can easily make it into
+--   a Read instance, by throwing away any error messages.
+readsPrecByParsePrec :: (Int -> TextParser a) -> Int -> ReadS a
+readsPrecByParsePrec p = \prec inp->
+    case runParser (p prec) inp of
+        (Left err,  rest) -> []
+        (Right val, rest) -> [(val,rest)]
 
 -- | One lexical chunk.  This is Haskell'98-style lexing - the result
 --   should match Prelude.lex apart from better error-reporting.

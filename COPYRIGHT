@@ -4,7 +4,7 @@ The module Text.ParserCombinators.HuttonMeijerWallace is
     (c) copyright 1996         Graham Hutton and Erik Meijer
   with modifications
     (c) copyright 1998-2000    Malcolm Wallace
-The modules Text.ParserCombinators.Poly* and Text.Parse
+The modules Text.ParserCombinators.Poly* and Text.Parse and Text.Parse.*
 are
     (c) copyright 2006-2009    Malcolm Wallace
 

@@ -4,7 +4,7 @@ VERSION  = 1.4
 CPP      = cpp -traditional
 #CPP     = cpphs --text 	# useful e.g. on MacOS X
 
-DIRS = Text Text/ParserCombinators Text/ParserCombinators/Poly
+DIRS = Text Text/Parse Text/ParserCombinators Text/ParserCombinators/Poly
 
 SRCS = \
 	src/Text/ParserCombinators/HuttonMeijer.hs \
@@ -72,15 +72,14 @@ haddock:
 		do mkdir -p docs/haddock/src/$$dir; \
 		done
 	for file in $(SRCS); \
-		do $(CPP) -D__NHC__ $$file >$$file.uncpp; \
+		do $(CPP) -U__NHC__ $$file >$$file.uncpp.hs; \
 		   HsColour -anchor -html $$file >docs/haddock/`dirname $$file`/`basename $$file .hs`.html; \
 		done
 	haddock --html --title=$(SOFTWARE) --odir=docs/haddock \
-		--package=$(SOFTWARE) \
 		--source-module="src/%{MODULE/.//}.html" \
 		--source-entity="src/%{MODULE/.//}.html#%{NAME}" \
-		$(patsubst %, %.uncpp, $(SRCS))
-	rm -f $(patsubst %, %.uncpp, $(SRCS))
+		$(patsubst %, %.uncpp.hs, $(SRCS))
+	rm -f $(patsubst %, %.uncpp.hs, $(SRCS))
 
 # packaging a distribution
 

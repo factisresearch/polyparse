@@ -18,10 +18,9 @@ import Text.ParserCombinators.Poly.Base
 import qualified Data.ByteString.Lazy.Char8 as BS
 import Data.ByteString.Lazy.Char8 (ByteString)
 
--- | This @Parser@ datatype is a fairly generic parsing monad with error
---   reporting.  It can be used for arbitrary token types, not just
---   String input.  (If you require a running state, use module PolyState
---   instead)
+-- | This @Parser@ datatype is a specialised parsing monad with error
+--   reporting.  Whereas the standard version can be used for arbitrary
+--   token types, this version is specialised to ByteString input only.
 newtype Parser a = P (ByteString -> Result ByteString a)
 
 -- | A return type like Either, that distinguishes not only between

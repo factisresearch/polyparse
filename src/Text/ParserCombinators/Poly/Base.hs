@@ -96,7 +96,7 @@ failBad e = commit (fail e)
 -- | @x `discard` y@ parses both x and y, but discards the result of y.
 --   Rather like @const@ lifted into parsers.
 discard :: PolyParse p => p a -> p b -> p a
-px `discard` py = do { x <- px; x `seq` (return (const x) `apply` py); }
+px `discard` py = do { x <- px; py; return x; }
 
 -- | @adjustErrBad@ is just like @adjustErr@ except it also raises the
 --   severity of the error.

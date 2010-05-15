@@ -65,7 +65,7 @@ class Parse a where
     --   any surrounding expression.  (Precedence determines whether
     --   parentheses are mandatory or optional.)
     parsePrec :: Int -> TextParser a
-    parsePrec _ = parens False parse
+    parsePrec _ = optionalParens parse
     -- | Parsing a list of items by default accepts the [] and comma syntax,
     --   except when the list is really a character string using \"\".
     parseList :: TextParser [a]	-- only to distinguish [] and ""
@@ -73,7 +73,8 @@ class Parse a where
                    `onFail`
                  do { isWord "["; isWord "]"; return [] }
                    `onFail`
-                 bracketSep (isWord "[") (isWord ",") (isWord "]") parse
+                 bracketSep (isWord "[") (isWord ",") (isWord "]")
+                            (optionalParens parse)
                    `adjustErr` ("Expected a list, but\n"++)
 
 -- | If there already exists a Read instance for a type, then we can make
@@ -126,9 +127,9 @@ isWord w = do { w' <- word
               ; if w'==w then return w else fail ("expected "++w++" got "++w')
               }
 
--- | Allow true string parens around an item.
+-- | Allow optional nested string parens around an item.
 optionalParens :: TextParser a -> TextParser a
-optionalParens p = bracket (isWord "(") (isWord ")") p `onFail` p
+optionalParens p = parens False p
 
 -- | Allow nested parens around an item (one set required when Bool is True).
 parens :: Bool -> TextParser a -> TextParser a
@@ -376,9 +377,9 @@ instance (Parse a, Parse b, Parse c) => Parse (a,b,c) where
 
 instance Parse a => Parse (Maybe a) where
     parsePrec p =
-            parens False (do { isWord "Nothing"; return Nothing })
+            optionalParens (do { isWord "Nothing"; return Nothing })
             `onFail`
-            parens (p>9) (do { isWord "Just"
+            parens (p>9)   (do { isWord "Just"
                                ; fmap Just $ parsePrec 10
                                      `adjustErrBad` ("but within Just, "++) })
             `adjustErr` (("expected a Maybe (Just or Nothing)\n"++).indent 2)

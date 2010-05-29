@@ -1,5 +1,5 @@
 name:		polyparse
-version:	1.4.1
+version:	1.5
 license:	LGPL
 license-file:	COPYRIGHT
 author:		Malcolm Wallace <Malcolm.Wallace@me.com>
@@ -38,6 +38,6 @@ library
     exposed-modules:
         Text.ParserCombinators.Poly.ByteString,
         Text.Parse.ByteString
-  cpp-options:		-DVERSION="1.4.1"
+  cpp-options:		-DVERSION="1.5"
   nhc98-options:	-K6M
   extensions:		CPP

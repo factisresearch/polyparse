@@ -165,15 +165,22 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
-polyparse-1.4.1, release date 2010.05.29<br>
+polyparse-1.5, release date 2010.05.29<br>
 By HTTP:
-<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.1.tar.gz">.tar.gz</a>,
-<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.1.zip">.zip</a>.
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.5.tar.gz">.tar.gz</a>,
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.5.zip">.zip</a>.
 <br>
 By FTP: 
 <a href="ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/">
 ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/</a>
 
+<p>
+<b>Older versions:</b><br>
+polyparse-1.4.1, release date 2010.05.29<br>
+By HTTP:
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.1.tar.gz">.tar.gz</a>,
+<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.1.zip">.zip</a>.
+<br>
 <p>
 <b>Older versions:</b><br>
 polyparse-1.4, release date 2009.12.10<br>
@@ -238,6 +245,14 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+
+<p>
+Version 1.5 has a reasonably large internal API change - moving lots of
+code around between modules in an attempt to rationalise the amount of
+cut-n-paste copies.  It also adopts the standard Applicative and
+Alternative classes, whilst additionally retaining the previous names
+(apply, discard, onFail) for those methods.  Users should see little
+change, unless they define their own instances of the PolyParse class.
 
 <p>
 Version 1.4.1 has two minor bugfixes: for `discard`, especially in the Lazy

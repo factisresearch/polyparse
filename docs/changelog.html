@@ -13,6 +13,44 @@
 </center>
 <hr>
 
+<h3>Changes in polyparse-1.5</h3>
+<p>
+<ul>
+<li>A huge internal rearrangement of the Poly variations:
+    (1) to share as much code as possible, avoiding cut-n-paste copies; and
+    (2) to use the standard Control.Applicative interface.
+
+<li>The Result type that was previously defined afresh for each variation
+    (Plain,Lazy,State,ByteString, etc) is now defined in one place.
+
+<li>The Parser type that was previously essentially identical between
+    Plain/Lazy, apart from a very small number of class methods, has now
+    been pulled out into a separate module.  This makes it clearer that
+    almost everything is shared between Plain and Lazy, with the precise
+    differences isolated to runParser and the instance of Applicative.
+    (Likewise the Parser type shared between State/StateLazy.)
+
+<li>The `apply` and `discard` methods previously were not the standard
+    ones from Control.Applicative (&lt;*&gt; and &lt;*), but now they are.
+    The old names have been retained as synonyms.
+
+<li>The `onFail` method was previously not the standard &lt;|&gt; from class
+    Alternative in Control.Applicative.  Now it is.  The old name has been
+    retained too.
+
+<li>The use of standard classes means that the former PolyParse class was in
+    the wrong place in the dependency hierarchy.  Its remaining methods
+    have been moved into a new class called Commitment, reflecting their
+    purpose.  Class PolyParse itself now has no methods of its own, it merely
+    gathers all of the other classes that are required (Functor, Monad,
+    Applicative, Alternative, and Commitment).
+
+<li>The exports of the modules Plain, Lazy, State, and StateLazy, remain
+    essentially as before, so users should not need to make too many
+    changes.  The main one is, if they defined their own parser monad, some
+    of the methods must now be moved/defined in different classes.
+
+
 <h3>Changes in polyparse-1.4.1</h3>
 <p>
 <ul>

@@ -25,8 +25,11 @@ library
         Text.ParserCombinators.HuttonMeijerWallace,
         Text.ParserCombinators.Poly,
         Text.ParserCombinators.Poly.Base,
+        Text.ParserCombinators.Poly.Result,
+        Text.ParserCombinators.Poly.Parser,
         Text.ParserCombinators.Poly.Plain,
         Text.ParserCombinators.Poly.Lazy,
+        Text.ParserCombinators.Poly.StateParser,
         Text.ParserCombinators.Poly.State,
         Text.ParserCombinators.Poly.StateLazy,
         Text.Parse

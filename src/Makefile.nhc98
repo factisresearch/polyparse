@@ -12,8 +12,11 @@ SRCS	= \
 	Text/ParserCombinators/HuttonMeijerWallace.hs \
 	Text/ParserCombinators/Poly.hs \
         Text/ParserCombinators/Poly/Base.hs \
+        Text/ParserCombinators/Poly/Result.hs \
+        Text/ParserCombinators/Poly/Parser.hs \
         Text/ParserCombinators/Poly/Plain.hs \
         Text/ParserCombinators/Poly/Lazy.hs \
+        Text/ParserCombinators/Poly/StateParser.hs \
         Text/ParserCombinators/Poly/State.hs \
         Text/ParserCombinators/Poly/StateLazy.hs \
 	Text/Parse.hs

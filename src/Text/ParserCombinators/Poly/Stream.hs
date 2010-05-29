@@ -28,8 +28,8 @@ data Stream a = forall s . Stream s (s->Pump s a)
 
 -- | This @Parser@ datatype is a fairly generic parsing monad with error
 --   reporting.  It can be used for arbitrary token types, not just
---   String input.  (If you require a running state, use module PolyState
---   instead)
+--   String input.  This variation is specialised to Streamed input tokens,
+--   rather than lists.
 newtype Parser t a = P (Stream t -> (EitherE String a, Stream t))
 
 --   A return type like Either, that distinguishes not only between

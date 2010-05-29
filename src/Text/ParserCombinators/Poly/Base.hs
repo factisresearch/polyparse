@@ -1,10 +1,12 @@
 module Text.ParserCombinators.Poly.Base
-  ( -- * The PolyParse class
-    PolyParse(..)	-- class of all monadic two-level-error parsers
+  ( -- * The PolyParse classes
+    Commitment(..)	-- class of all two-level-error values
+  , PolyParse		-- class of all monadic two-level-error parsers
 
     -- * Combinators general to all parser types.
     -- ** Simple combinators
-  , discard	-- :: PolyParse p => p a -> p b -> p a
+  , apply	-- :: PolyParse p => p (a->b) -> p a -> p b
+  , discard	-- :: PolyParse p => p a      -> p b -> p a
     -- ** Error-handling
   , failBad	-- :: PolyParse p => String -> p a
   , adjustErrBad-- :: PolyParse p => p a -> (String->String) -> p a
@@ -17,6 +19,7 @@ module Text.ParserCombinators.Poly.Base
   , upto	-- :: PolyParse p => Int -> p a -> p [a]
   , many	-- :: PolyParse p => p a -> p [a]
   , many1	-- :: PolyParse p => p a -> p [a]
+  , some	-- :: PolyParse p => p a -> p [a]
   , sepBy	-- :: PolyParse p => p a -> p sep -> p [a]
   , sepBy1	-- :: PolyParse p => p a -> p sep -> p [a]
   , bracketSep	-- :: PolyParse p => p bra -> p sep -> p ket -> p a -> p [a]
@@ -24,24 +27,22 @@ module Text.ParserCombinators.Poly.Base
   , manyFinally -- :: PolyParse p => p a -> p z -> p [a]
   ) where
 
+import Control.Applicative
+
 #ifdef __NHC__
 default (Integer,Double,[])	-- hack to avoid bizarre type defaulting error
 instance PolyParse []
 #endif
 
--- | The @PolyParse@ class is an abstraction over all the current
---   concrete representations of monadic parser combinators in this
+-- | The @Commitment@ class is an abstraction over all the current
+--   concrete representations of monadic/applicative parser combinators in this
 --   package.  The common feature is two-level error-handling.
 --   Some primitives must be implemented specific to each parser type
 --   (e.g. depending on whether the parser has a running state, or
 --   whether it is lazy).  But given those primitives, large numbers of
 --   combinators do not depend any further on the internal structure of
 --   the particular parser.
---
---   There are two additional basic combinators that we expect to be implemented
---   afresh for every concrete type, but which (for technical reasons)
---   cannot be class methods.  They are @next@ and @satisfy@.
-class (Functor p, Monad p) => PolyParse p where
+class Commitment p where
     -- | Commit is a way of raising the severity of any errors found within
     --   its argument.  Used in the middle of a parser definition, it means that
     --   any operations prior to commitment fail softly, but after commitment,
@@ -50,26 +51,33 @@ class (Functor p, Monad p) => PolyParse p where
     -- | @p `adjustErr` f@ applies the transformation @f@ to any error message
     --   generated in @p@, having no effect if @p@ succeeds.
     adjustErr :: p a -> (String -> String) -> p a
-    -- | @p `onFail` q@ means parse p, unless p fails, in which case
-    --   parse q instead.
-    --   Can be chained together to give multiple attempts to parse something.
-    --   (Note that q could itself be a failing parser, e.g. to change the error
-    --   message from that defined in p to something different.)
-    --   However, a severe failure in p cannot be ignored.
-    onFail    :: p a -> p a -> p a
     -- | Parse the first alternative that succeeds, but if none succeed,
     --   report only the severe errors, and if none of those, then report
     --   all the soft errors.
     oneOf'    :: [(String, p a)] -> p a
-    -- | Apply a parsed function to a parsed value.
-    --   Rather like ordinary function application lifted into parsers.
-    apply     :: p (a->b) -> p a -> p b
-    pf `apply` px = do { f <- pf; x <- px; return (f x) }
-      -- note: the Poly.Lazy variants override this defn with a lazier one.
 
-infixl 6 `onFail`	-- not sure about precedence 6?
+-- | The @PolyParse@ class is an abstraction gathering all of the common
+--   features that a two-level error-handling parser requires:
+--   the applicative parsing interface, the monadic interface, and commitment.
+--
+--   There are two additional basic combinators that we expect to be implemented
+--   afresh for every concrete type, but which (for technical reasons)
+--   cannot be class methods.  They are @next@ and @satisfy@.
+class (Functor p, Monad p, Applicative p, Alternative p, Commitment p) =>
+      PolyParse p
+
 infixl 3 `apply`
 infixl 3 `discard`
+
+-- | Apply a parsed function to a parsed value.
+--   Rather like ordinary function application lifted into parsers.
+apply  :: PolyParse p => p (a->b) -> p a -> p b
+apply = (<*>)
+
+-- | @x `discard` y@ parses both x and y, but discards the result of y.
+--   Rather like @const@ lifted into parsers.
+discard :: PolyParse p => p a -> p b -> p a
+px `discard` py = do { x <- px; y <- py; y `seq` return x; }
 
 {-
 -- Combinators we expect most concrete parser types to implement.
@@ -94,11 +102,6 @@ satisfy p = do{ x <- next
 failBad :: PolyParse p => String -> p a
 failBad e = commit (fail e)
 
--- | @x `discard` y@ parses both x and y, but discards the result of y.
---   Rather like @const@ lifted into parsers.
-discard :: PolyParse p => p a -> p b -> p a
-px `discard` py = do { x <- px; py; return x; }
-
 -- | @adjustErrBad@ is just like @adjustErr@ except it also raises the
 --   severity of the error.
 adjustErrBad :: PolyParse p => p a -> (String->String) -> p a
@@ -107,7 +110,7 @@ p `adjustErrBad` f = commit (p `adjustErr` f)
 -- | Parse the first alternative in the list that succeeds.
 oneOf :: PolyParse p => [p a] -> p a
 oneOf []     = fail ("failed to parse any of the possible choices")
-oneOf (p:ps) = p `onFail` oneOf ps
+oneOf (p:ps) = p <|> oneOf ps
 --oneOf :: Show t => [Parser t a] -> Parser t a
 --oneOf []     = do { n <- next
 --                  ; fail ("failed to parse any of the possible choices"
@@ -119,10 +122,6 @@ oneOf (p:ps) = p `onFail` oneOf ps
 indent :: Int -> String -> String
 indent n = unlines . map (replicate n ' ' ++) . lines
 
--- | 'optional' indicates whether the parser succeeded through the Maybe type.
-optional :: PolyParse p => p a -> p (Maybe a)
-optional p = fmap Just p `onFail` return Nothing
-
 -- | 'exactly n p' parses precisely n items, using the parser p, in sequence.
 exactly :: PolyParse p => Int -> p a -> p [a]
 exactly 0 p = return []
@@ -130,16 +129,11 @@ exactly n p = return (:) `apply`  (p `adjustErr` (("When expecting exactly "
                                                     ++show n++" more items")++))
                          `apply`  exactly (n-1) p
 
--- | 'upto n p' parses n or fewer items, using the parser p, in sequence.
-upto :: PolyParse p => Int -> p a -> p [a]
-upto 0 p = return []
-upto n p = do x <- p; return (x:) `apply` upto (n-1) p
-           `onFail` return []
-
 -- | 'many p' parses a list of elements with individual parser p.
 --   Cannot fail, since an empty list is a valid return value.
 many :: PolyParse p => p a -> p [a]
 many p = many1 p `onFail` return []
+-}
 
 -- | Parse a non-empty list of items.
 many1 :: PolyParse p => p a -> p [a]
@@ -150,7 +144,7 @@ many1 p = do { x <- p `adjustErr` (("In a sequence:\n"++). indent 2)
 
 -- | Parse a list of items separated by discarded junk.
 sepBy :: PolyParse p => p a -> p sep -> p [a]
-sepBy p sep = do sepBy1 p sep `onFail` return []
+sepBy p sep = do sepBy1 p sep <|> return []
 
 -- | Parse a non-empty list of items separated by discarded junk.
 sepBy1 :: PolyParse p => p a -> p sep -> p [a]
@@ -164,7 +158,7 @@ sepBy1 p sep = do { x <- p
 bracketSep :: PolyParse p => p bra -> p sep -> p ket -> p a -> p [a]
 bracketSep open sep close p =
     do { open; close; return [] }
-       `onFail`
+       <|>
     do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
        ; x <- p  `adjustErr` ("After first bracket in a group:\n\t"++)
        ; return (x:)
@@ -186,7 +180,7 @@ bracket open close p = do
 manyFinally :: PolyParse p => p a -> p z -> p [a]
 manyFinally p t =
     (many p `discard` t)
-      `onFail`
+      <|>
     oneOf' [ ("sequence terminator", do { t; return [] } )
            , ("item in a sequence",  do { p; return [] } )
            ]

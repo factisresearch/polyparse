@@ -1,0 +1,104 @@
+-- | This module contains the definitions for a generic parser, without
+--   running state.  These are the parts that are shared between the Plain
+--   and Lazy variations.  Do not import this module directly, but only
+--   via T.P.Poly.Plain or T.P.Poly.Lazy.
+module Text.ParserCombinators.Poly.Parser
+  ( -- * The Parser datatype
+    Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
+  , Result(..)	-- internal to the Parser Monad.
+    -- ** basic parsers
+  , next	-- :: Parser t t
+  , eof		-- :: Parser t ()
+  , satisfy	-- :: (t->Bool) -> Parser t t
+  , onFail      -- :: Parser t a -> Parser t a -> Parser t a
+
+    -- ** re-parsing
+  , reparse	-- :: [t] -> Parser t ()
+  ) where
+
+
+import Text.ParserCombinators.Poly.Base
+import Text.ParserCombinators.Poly.Result
+
+-- | This @Parser@ datatype is a fairly generic parsing monad with error
+--   reporting.  It can be used for arbitrary token types, not just
+--   String input.  (If you require a running state, use module Poly.State
+--   instead)
+newtype Parser t a = P ([t] -> Result [t] a)
+
+instance Functor (Parser t) where
+    fmap f (P p) = P (fmap f . p)
+
+instance Monad (Parser t) where
+    return x     = P (\ts-> Success ts x)
+    fail e       = P (\ts-> Failure ts e)
+    (P f) >>= g  = P (continue . f)
+      where
+        continue (Success ts x)             = let (P g') = g x in g' ts
+        continue (Committed (Committed r))  = continue (Committed r)
+        continue (Committed r)              = Committed (continue r)
+        continue (Failure ts e)             = Failure ts e
+
+instance Commitment (Parser t) where
+    commit (P p)         = P (Committed . p)
+    (P p) `adjustErr` f  = P (adjust . p)
+      where
+        adjust (Failure z e) = Failure z (f e)
+        adjust (Committed r) = Committed (adjust r)
+        adjust  good         = good
+
+    oneOf' = accum []
+      where accum errs [] =
+                fail ("failed to parse any of the possible choices:\n"
+                            ++indent 2 (concatMap showErr (reverse errs)))
+            accum errs ((e,P p):ps) =
+                P (\ts-> case p ts of
+                           Failure _ err ->
+                                       let (P p) = accum ((e,err):errs) ps
+                                       in p ts
+                           r@(Success z a)    -> r
+                           r@(Committed _)    -> r )
+            showErr (name,err) = name++":\n"++indent 2 err
+
+infixl 6 `onFail`	-- not sure about precedence 6?
+
+-- | @p `onFail` q@ means parse p, unless p fails, in which case
+--   parse q instead.
+--   Can be chained together to give multiple attempts to parse something.
+--   (Note that q could itself be a failing parser, e.g. to change the error
+--   message from that defined in p to something different.)
+--   However, a severe failure in p cannot be ignored.
+onFail :: Parser t a -> Parser t a -> Parser t a
+(P p) `onFail` (P q) = P (\ts-> continue ts $ p ts)
+  where
+    continue ts (Failure z e) = q ts
+--  continue _  (Committed r) = r   -- no, remain Committed
+    continue _  r             = r
+
+
+------------------------------------------------------------------------
+next :: Parser t t
+next = P (\ts-> case ts of
+                  []      -> Failure [] "Ran out of input (EOF)"
+                  (t:ts') -> Success ts' t )
+
+eof  :: Parser t ()
+eof  = P (\ts-> case ts of
+                  []      -> Success [] ()
+                  (t:ts') -> Failure ts "Expected end of input (EOF)" )
+
+satisfy :: (t->Bool) -> Parser t t
+satisfy pred = do { x <- next
+                  ; if pred x then return x else fail "Parse.satisfy: failed"
+                  }
+
+------------------------------------------------------------------------
+-- | Push some tokens back onto the front of the input stream and reparse.
+--   This is useful e.g. for recursively expanding macros.  When the
+--   user-parser recognises a macro use, it can lookup the macro
+--   expansion from the parse state, lex it, and then stuff the
+--   lexed expansion back down into the parser.
+reparse    :: [t] -> Parser t ()
+reparse ts  = P (\inp-> Success (ts++inp) ())
+
+------------------------------------------------------------------------

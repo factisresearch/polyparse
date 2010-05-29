@@ -7,6 +7,7 @@ module Text.ParserCombinators.Poly.ByteString
   , next
   , eof
   , satisfy
+  , onFail
     -- ** re-parsing
   , reparse
     -- * Re-export all more general combinators
@@ -15,35 +16,19 @@ module Text.ParserCombinators.Poly.ByteString
 
 
 import Text.ParserCombinators.Poly.Base
+import Text.ParserCombinators.Poly.Result
 import qualified Data.ByteString.Lazy.Char8 as BS
 import Data.ByteString.Lazy.Char8 (ByteString)
+import Control.Applicative
 
 -- | This @Parser@ datatype is a specialised parsing monad with error
 --   reporting.  Whereas the standard version can be used for arbitrary
 --   token types, this version is specialised to ByteString input only.
 newtype Parser a = P (ByteString -> Result ByteString a)
 
--- | A return type like Either, that distinguishes not only between
---   right and wrong answers, but also has commitment, so that a failure
---   cannot be undone.  This should only be used for writing very primitive
---   parsers - really it is an internal detail of the library.
-data Result z a = Success   z a
-                | Failure   z String
-                | Committed (Result z a)
-
-instance Functor (Result z) where
-    fmap f (Success z a) = Success z (f a)
-    fmap _ (Failure z e) = Failure z e
-    fmap f (Committed r) = Committed (fmap f r)
-
 -- | Apply a parser to an input token sequence.
 runParser :: Parser a -> ByteString -> (Either String a, ByteString)
 runParser (P p) = resultToEither . p
-  where
-    resultToEither :: Result z a -> (Either String a, z)
-    resultToEither (Success z a)  =  (Right a, z)
-    resultToEither (Failure z e)  =  (Left e, z)
-    resultToEither (Committed r)  =  resultToEither r
 
 instance Functor Parser where
     fmap f (P p) = P (fmap f . p)
@@ -58,19 +43,13 @@ instance Monad Parser where
         continue (Committed r)              = Committed (continue r)
         continue (Failure ts e)             = Failure ts e
 
-instance PolyParse Parser where
+instance Commitment Parser where
     commit (P p)         = P (Committed . p)
     (P p) `adjustErr` f  = P (adjust . p)
       where
         adjust (Failure z e) = Failure z (f e)
         adjust (Committed r) = Committed (adjust r)
         adjust  good         = good
-
-    (P p) `onFail` (P q) = P (\ts-> continue ts $ p ts)
-      where
-        continue ts (Failure _ _) = q ts
-    --  continue _  (Committed r) = r	-- no, remain Committed
-        continue _  r             = r
 
     oneOf' = accum []
       where accum errs [] =
@@ -84,6 +63,19 @@ instance PolyParse Parser where
                            r@(Success _ _)    -> r
                            r@(Committed _)    -> r )
             showErr (name,err) = name++":\n"++indent 2 err
+
+instance Applicative Parser where
+    pure f    = return f
+    pf <*> px = do { f <- pf; x <- px; return (f x) }
+#if defined(GLASGOW_HASKELL) && GLASGOW_HASKELL > 610
+    p  <*  q  = p `discard` q
+#endif
+
+instance Alternative Parser where
+    empty     = fail "no parse"
+    p <|> q   = p `onFail` q
+
+instance PolyParse Parser
 
 ------------------------------------------------------------------------
 next :: Parser Char
@@ -100,6 +92,18 @@ satisfy :: (Char -> Bool) -> Parser Char
 satisfy f = do { x <- next
                ; if f x then return x else fail "Parse.satisfy: failed"
                }
+
+-- | @p `onFail` q@ means parse p, unless p fails, in which case
+--   parse q instead.
+--   Can be chained together to give multiple attempts to parse something.
+--   (Note that q could itself be a failing parser, e.g. to change the error
+--   message from that defined in p to something different.)
+--   However, a severe failure in p cannot be ignored.
+onFail :: Parser a -> Parser a -> Parser a
+(P p) `onFail` (P q) = P (\ts-> continue ts $ p ts)
+  where continue ts (Failure _ _) = q ts
+    --  continue _  (Committed r) = r	-- no, remain Committed
+        continue _  r             = r
 
 ------------------------------------------------------------------------
 -- | Push some tokens back onto the front of the input stream and reparse.

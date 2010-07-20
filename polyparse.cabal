@@ -2,9 +2,9 @@ name:		polyparse
 version:	1.4.1
 license:	LGPL
 license-file:	COPYRIGHT
-author:		Malcolm Wallace <Malcolm.Wallace@cs.york.ac.uk>
+author:		Malcolm Wallace <Malcolm.Wallace@me.com>
 maintainer:	author
-homepage:	http://www.cs.york.ac.uk/fp/polyparse/
+homepage:	http://code.haskell.org/~malcolm/polyparse/
 category:	Text, Parsing
 synopsis:	A variety of alternative parser combinator libraries.
 description:

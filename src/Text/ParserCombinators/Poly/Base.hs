@@ -14,6 +14,7 @@ module Text.ParserCombinators.Poly.Base
   , optional	-- :: PolyParse p => p a -> p (Maybe a)
     -- ** Sequences
   , exactly	-- :: PolyParse p => Int -> p a -> p [a]
+  , upto	-- :: PolyParse p => Int -> p a -> p [a]
   , many	-- :: PolyParse p => p a -> p [a]
   , many1	-- :: PolyParse p => p a -> p [a]
   , sepBy	-- :: PolyParse p => p a -> p sep -> p [a]
@@ -128,6 +129,12 @@ exactly 0 p = return []
 exactly n p = return (:) `apply`  (p `adjustErr` (("When expecting exactly "
                                                     ++show n++" more items")++))
                          `apply`  exactly (n-1) p
+
+-- | 'upto n p' parses n or fewer items, using the parser p, in sequence.
+upto :: PolyParse p => Int -> p a -> p [a]
+upto 0 p = return []
+upto n p = do x <- p; return (x:) `apply` upto (n-1) p
+           `onFail` return []
 
 -- | 'many p' parses a list of elements with individual parser p.
 --   Cannot fail, since an empty list is a valid return value.

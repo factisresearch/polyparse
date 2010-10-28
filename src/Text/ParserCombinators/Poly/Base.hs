@@ -133,7 +133,7 @@ exactly n p = return (:) `apply`  (p `adjustErr` (("When expecting exactly "
 upto :: PolyParse p => Int -> p a -> p [a]
 upto 0 p = return []
 upto n p = do x <- p; return (x:) `apply` upto (n-1) p
-           `onFail` return []
+           <|> return []
 
 
 {- is in Control.Applicative

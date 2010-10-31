@@ -77,22 +77,27 @@ onFail :: Parser t a -> Parser t a -> Parser t a
 
 
 ------------------------------------------------------------------------
+
+-- | Simply return the next token in the input tokenstream.
 next :: Parser t t
 next = P (\ts-> case ts of
                   []      -> Failure [] "Ran out of input (EOF)"
                   (t:ts') -> Success ts' t )
 
+-- | Succeed if the end of file/input has been reached, fail otherwise.
 eof  :: Parser t ()
 eof  = P (\ts-> case ts of
                   []      -> Success [] ()
                   (t:ts') -> Failure ts "Expected end of input (EOF)" )
 
+-- | Return the next token if it satisfies the given predicate.
 satisfy :: (t->Bool) -> Parser t t
 satisfy pred = do { x <- next
                   ; if pred x then return x else fail "Parse.satisfy: failed"
                   }
 
 ------------------------------------------------------------------------
+
 -- | Push some tokens back onto the front of the input stream and reparse.
 --   This is useful e.g. for recursively expanding macros.  When the
 --   user-parser recognises a macro use, it can lookup the macro

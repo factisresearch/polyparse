@@ -79,17 +79,21 @@ onFail :: Parser s t a -> Parser s t a -> Parser s t a
         continue _ _  r               = r
 
 ------------------------------------------------------------------------
+
+-- | Simply return the next token in the input tokenstream.
 next :: Parser s t t
 next = P (\s ts-> case ts of
                   []      -> Failure ([],s) "Ran out of input (EOF)"
                   (t:ts') -> Success (ts',s) t )
 
+-- | Succeed if the end of file/input has been reached, fail otherwise.
 eof  :: Parser s t ()
 eof  = P (\s ts-> case ts of
                   []      -> Success ([],s) ()
                   (t:ts') -> Failure (ts,s) "Expected end of input (eof)" )
 
 
+-- | Return the next token if it satisfies the given predicate.
 satisfy :: (t->Bool) -> Parser s t t
 satisfy pred = do { x <- next
                   ; if pred x then return x else fail "Parse.satisfy: failed"

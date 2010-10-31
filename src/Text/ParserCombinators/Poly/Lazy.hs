@@ -81,18 +81,33 @@ instance Alternative (Parser t) where
 instance PolyParse (Parser t)
 
 ------------------------------------------------------------------------
+
+-- | Simply return the next token in the input tokenstream.
 next    ::  Parser t t
 next    = P P.next
 
+-- | Succeed if the end of file/input has been reached, fail otherwise.
 eof     :: Parser t ()
 eof     = P P.eof
 
+-- | Return the next token if it satisfies the given predicate.
 satisfy :: (t->Bool) -> Parser t t
 satisfy = P . P.satisfy
 
+-- | @p `onFail` q@ means parse p, unless p fails, in which case
+--   parse q instead.
+--   Can be chained together to give multiple attempts to parse something.
+--   (Note that q could itself be a failing parser, e.g. to change the error
+--   message from that defined in p to something different.)
+--   However, a severe failure in p cannot be ignored.
 onFail  :: Parser t a -> Parser t a -> Parser t a
 onFail (P a) (P b) = P (a `P.onFail` b)
 
+-- | Push some tokens back onto the front of the input stream and reparse.
+--   This is useful e.g. for recursively expanding macros.  When the
+--   user-parser recognises a macro use, it can lookup the macro
+--   expansion from the parse state, lex it, and then stuff the
+--   lexed expansion back down into the parser.
 reparse :: [t] -> Parser t ()
 reparse = P . P.reparse
 ------------------------------------------------------------------------

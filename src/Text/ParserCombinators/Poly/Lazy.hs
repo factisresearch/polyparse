@@ -39,11 +39,14 @@ newtype Parser t a = P (P.Parser t a)
         deriving (Functor,Monad,Commitment)
 #else
 instance Functor (Parser t) where
-    fmap f (P (P.P p)) = P (P.P . fmap f . p)
+    fmap f (P p) = P (fmap f p)
 instance Monad (Parser t) where
     return x  = P (return x)
     fail e    = P (fail e)
     (P f) >>= (P g) = P (f >>= g)
+instance Commitment (Parser t) where
+    commit (P p)   = P (P.commit p)
+    (P p) `adjustErr` f  = P (p `P.adjustErr` f)
 #endif
 
 -- | Apply a parser to an input token sequence.

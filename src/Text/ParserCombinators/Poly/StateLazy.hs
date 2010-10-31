@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP, GeneralizedNewtypeDeriving #-}
 module Text.ParserCombinators.Poly.StateLazy
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
@@ -22,7 +23,7 @@ module Text.ParserCombinators.Poly.StateLazy
 
 import Text.ParserCombinators.Poly.Base hiding (manyFinally)
 import Text.ParserCombinators.Poly.Result
-import Text.ParserCombinators.Poly.StateParser
+import qualified Text.ParserCombinators.Poly.StateParser as P
 import Control.Applicative
 
 #if __GLASGOW_HASKELL__
@@ -34,12 +35,28 @@ throwE :: String -> a
 throwE msg = error msg
 #endif
 
--- The only differences between a State and a StateLazy parser are the instance
--- of Applicative, and the type (and implementation) of runParser.
+-- | The only differences between a State and a StateLazy parser are the
+--   instance of Applicative, and the type (and implementation) of runParser.
+--   We therefore need to /newtype/ the original Parser type, to allow it
+--   to have a different instance.
+newtype Parser s t a = P (P.Parser s t a)
+#ifdef __GLASGOW_HASKELL__
+        deriving (Functor,Monad,Commitment)
+#else
+instance Functor (Parser t) where
+    fmap f (P p) = P (fmap f p)
+instance Monad (Parser t) where
+    return x  = P (return x)
+    fail e    = P (fail e)
+    (P f) >>= (P g) = P (f >>= g)
+instance Commitment (Parser t) where
+    commit (P p)   = P (P.commit p)
+    (P p) `adjustErr` f  = P (p `P.adjustErr` f)
+#endif
 
 -- | Apply a parser to an input token sequence.
 runParser :: Parser s t a -> s -> [t] -> (a, s, [t])
-runParser (P p) = \s -> fromResult . p s
+runParser (P (P.P p)) = \s -> fromResult . p s
   where
     fromResult :: Result (z,s) a -> (a, s, z)
     fromResult (Success (z,s) a)  =  (a, s, z)
@@ -53,7 +70,7 @@ instance Applicative (Parser s t) where
     --   is strict in the result of the function parser, but
     --   lazy in the result of the argument parser.  (Argument laziness is
     --   the distinctive feature over other implementations.)
-    (P pf) <*> px = P (\s-> continue . pf s)
+    (P (P.P pf)) <*> px = P (P.P (\s-> continue . pf s))
       where
         continue (Success (z,s) f) = let (x,s',z') = runParser px s z
                                      in Success (z',s') (f x)
@@ -68,6 +85,55 @@ instance Alternative (Parser s t) where
     p <|> q   = p `onFail` q
 
 instance PolyParse (Parser s t)
+
+------------------------------------------------------------------------
+
+-- | Simply return the next token in the input tokenstream.
+next    ::  Parser s t t
+next    = P P.next
+
+-- | Succeed if the end of file/input has been reached, fail otherwise.
+eof     :: Parser s t ()
+eof     = P P.eof
+
+-- | Return the next token if it satisfies the given predicate.
+satisfy :: (t->Bool) -> Parser s t t
+satisfy = P . P.satisfy
+
+-- | @p `onFail` q@ means parse p, unless p fails, in which case
+--   parse q instead.
+--   Can be chained together to give multiple attempts to parse something.
+--   (Note that q could itself be a failing parser, e.g. to change the error
+--   message from that defined in p to something different.)
+--   However, a severe failure in p cannot be ignored.
+onFail  :: Parser s t a -> Parser s t a -> Parser s t a
+onFail (P a) (P b) = P (a `P.onFail` b)
+
+-- | Push some tokens back onto the front of the input stream and reparse.
+--   This is useful e.g. for recursively expanding macros.  When the
+--   user-parser recognises a macro use, it can lookup the macro
+--   expansion from the parse state, lex it, and then stuff the
+--   lexed expansion back down into the parser.
+reparse :: [t] -> Parser s t ()
+reparse = P . P.reparse
+
+------------------------------------------------------------------------
+-- State handling
+
+-- | Update the internal state.
+stUpdate   :: (s->s) -> Parser s t ()
+stUpdate f  = P (P.stUpdate f)
+
+-- | Query the internal state.
+stQuery    :: (s->a) -> Parser s t a
+stQuery f   = P (P.stQuery f)
+
+-- | Deliver the entire internal state.
+stGet      :: Parser s t s
+stGet       = P (P.stGet)
+
+------------------------------------------------------------------------
+
 
 manyFinally :: Parser s t a -> Parser s t z -> Parser s t [a]
 {-

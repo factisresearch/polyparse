@@ -25,6 +25,8 @@ module Text.Parse
   , parseLitChar
     -- ** Re-export all the more general combinators from Poly too
   , module Text.ParserCombinators.Poly
+    -- ** Strings as whole entities
+  , allAsString
   ) where
 
 import Char (isSpace,toLower,isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
@@ -427,5 +429,9 @@ instance (Parse a, Parse b) => Parse (Either a b) where
 
 instance Parse a => Parse [a] where
     parse = parseList
+
+-- | Simply return the entire remaining input String.
+allAsString :: TextParser String
+allAsString =  P (\s-> Success [] s)
 
 ------------------------------------------------------------------------

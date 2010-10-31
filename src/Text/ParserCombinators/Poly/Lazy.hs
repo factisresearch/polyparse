@@ -4,13 +4,13 @@ module Text.ParserCombinators.Poly.Lazy
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
   , Result(..)	-- internal to the parser monad
   , runParser	-- :: Parser t a -> [t] -> (Either String a, [t])
-    -- ** basic parsers
+    -- ** Basic parsers
   , next	-- :: Parser t t
   , eof		-- :: Parser t ()
   , satisfy	-- :: (t->Bool) -> Parser t t
   , onFail      -- :: Parser t a -> Parser t a -> Parser t a
 
-    -- ** re-parsing
+    -- ** Re-parsing
   , reparse	-- :: [t] -> Parser t ()
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base

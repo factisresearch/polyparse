@@ -2,11 +2,11 @@ module Text.ParserCombinators.Poly.Stream
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
   , runParser	-- :: Parser t a -> [t] -> (Either String a, [t])
-    -- ** basic parsers
+    -- ** Basic parsers
   , next	-- :: Parser t t
   , satisfy	-- :: (t->Bool) -> Parser t t
 
-    -- ** re-parsing
+    -- ** Re-parsing
 --  , reparse	-- :: [t] -> Parser t ()
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base
@@ -81,6 +81,8 @@ instance PolyParse (Parser t) where
             isBad (_,(b,_)) = b
 
 ------------------------------------------------------------------------
+
+-- | Simply return the next token in the input tokenstream.
 next :: Parser t t
 next = P (\ (Stream s pump) ->
          let one seed = case pump seed of
@@ -89,7 +91,12 @@ next = P (\ (Stream s pump) ->
                           Skip s -> one s
                           Yield t s -> (Right t, Stream s pump)
          in one s )
+
+-- | Succeed if the end of file/input has been reached, fail otherwise.
+eof  :: Parser t ()
+eof  = P undefined
          
+-- | Return the next token if it satisfies the given predicate.
 satisfy :: (t->Bool) -> Parser t t
 satisfy pred = do { x <- next
                   ; if pred x then return x else fail "Parse.satisfy: failed"

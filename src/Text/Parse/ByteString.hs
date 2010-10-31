@@ -8,7 +8,7 @@ module Text.Parse.ByteString
   , parseByRead	-- :: Read a => String -> TextParser a
   , readByParse -- :: TextParser a -> ReadS a
   , readsPrecByParsePrec -- :: (Int->TextParser a) -> Int -> ReadS a
-    -- ** Combinators specific to string input, lexed haskell-style
+    -- ** Combinators specific to bytestring input, lexed haskell-style
   , word	-- :: TextParser String
   , isWord	-- :: String -> TextParser ()
   , optionalParens	-- :: TextParser a -> TextParser a

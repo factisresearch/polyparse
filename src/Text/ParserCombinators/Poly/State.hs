@@ -3,7 +3,7 @@ module Text.ParserCombinators.Poly.State
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
   , Result(..)	-- internal to the parser monad
   , runParser	-- :: Parser s t a -> s -> [t] -> (Either String a, s, [t])
-    -- ** basic parsers
+    -- ** Basic parsers
   , next	-- :: Parser s t t
   , eof		-- :: Parser s t ()
   , satisfy	-- :: (t->Bool) -> Parser s t t
@@ -12,7 +12,7 @@ module Text.ParserCombinators.Poly.State
   , stUpdate    -- :: (s->s) -> Parser s t ()
   , stQuery     -- :: (s->a) -> Parser s t a
   , stGet       -- :: Parser s t s
-    -- ** re-parsing
+    -- ** Re-parsing
   , reparse	-- :: [t] -> Parser s t ()
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base

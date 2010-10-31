@@ -6,13 +6,13 @@ module Text.ParserCombinators.Poly.Parser
   ( -- * The Parser datatype
     Parser(P)	-- datatype, instance of: Functor, Monad, PolyParse
   , Result(..)	-- internal to the Parser Monad.
-    -- ** basic parsers
+    -- ** Basic parsers
   , next	-- :: Parser t t
   , eof		-- :: Parser t ()
   , satisfy	-- :: (t->Bool) -> Parser t t
   , onFail      -- :: Parser t a -> Parser t a -> Parser t a
 
-    -- ** re-parsing
+    -- ** Re-parsing
   , reparse	-- :: [t] -> Parser t ()
   ) where
 

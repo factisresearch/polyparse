@@ -3,12 +3,12 @@ module Text.ParserCombinators.Poly.ByteString
     Parser(P)
   , Result(..)
   , runParser
-    -- ** basic parsers
+    -- ** Basic parsers
   , next
   , eof
   , satisfy
   , onFail
-    -- ** re-parsing
+    -- ** Re-parsing
   , reparse
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base
@@ -78,16 +78,20 @@ instance Alternative Parser where
 instance PolyParse Parser
 
 ------------------------------------------------------------------------
+
+-- | Simply return the next token in the input tokenstream.
 next :: Parser Char
 next = P (\bs-> case BS.uncons bs of
                 Nothing -> Failure bs "Ran out of input (EOF)"
                 Just (c, bs') -> Success bs' c )
 
+-- | Succeed if the end of file/input has been reached, fail otherwise.
 eof :: Parser ()
 eof = P (\bs -> if BS.null bs
                 then Success bs ()
                 else Failure bs "Expected end of input (EOF)" )
 
+-- | Return the next token if it satisfies the given predicate.
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy f = do { x <- next
                ; if f x then return x else fail "Parse.satisfy: failed"
@@ -106,6 +110,7 @@ onFail :: Parser a -> Parser a -> Parser a
         continue _  r             = r
 
 ------------------------------------------------------------------------
+
 -- | Push some tokens back onto the front of the input stream and reparse.
 --   This is useful e.g. for recursively expanding macros.  When the
 --   user-parser recognises a macro use, it can lookup the macro

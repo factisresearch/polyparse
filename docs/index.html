@@ -82,15 +82,17 @@ widely-used parser libraries available elsewhere.
      <b>Text.ParserCombinators.Poly.Result</b><br>
      <b>Text.ParserCombinators.Poly.Parser</b><br>
      <b>Text.ParserCombinators.Poly.StateParser</b>
+     These modules are internal details.
      All of the Poly variations (Plain, Lazy, State, etc)
      share a lot in common: many of the
      combinators are indeed implemented identically.  To reduce code
      duplication in the library, we provide a class-based interface
-     here.  The actual implementations for strict, lazy, and so on, are
-     instances of the class, defined in modules at the same level in the
+     here.  The datatype implementations for strict, lazy, and so on, are
+     more-or-less identical, but with separate
+     instances of the classes, defined in modules at the same level in the
      hierarchy (e.g. T.P.Poly.Lazy etc).  Every individual variation
-     re-exports these base combinators, so there should be no need to
-     import this module directly.
+     re-exports the base combinators, and base types, so there should be
+     no need to import these modules directly.
 <li> <b>Text.ParserCombinators.Poly.ByteString</b>  is a specialised
      version of the Poly parser for ByteString input only.
 <li> <b>Text.ParserCombinators.HuttonMeijer</b>  The most venerable of all
@@ -164,18 +166,14 @@ Please edit the wiki if you discover any nice tricks!
 <p>
 <b>Development version:</b><br>
 <br><tt><a href="http://darcs.net/">darcs</a> get
-    http://www.cs.york.ac.uk/fp/darcs/polyparse</tt>
+    http://code.haskell.org/polyparse</tt>
 
 <p>
 <b>Current released version:</b><br>
-polyparse-1.5, release date 2010.05.29<br>
+polyparse-1.5, release date 2010.xx.xx<br>
 By HTTP:
-<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.5.tar.gz">.tar.gz</a>,
-<a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.5.zip">.zip</a>.
-<br>
-By FTP: 
-<a href="ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/">
-ftp://ftp.cs.york.ac.uk/pub/haskell/polyparse/</a>
+<a href="http://code.haskell.org/polyparse/polyparse-1.5.tar.gz">.tar.gz</a>,
+<a href="http://code.haskell.org/polyparse/polyparse-1.5.zip">.zip</a>.
 
 <p>
 <b>Older versions:</b><br>
@@ -332,16 +330,16 @@ lives on here as Text.ParserCombinators.HuttonMeijer.
 <li>
 <a href="http://www.cs.chalmers.se/~rojemo/thesis.html">Niklas Rojemo's
 combinators.</a> The parser combinators developed and used in the
-implementation of the nhc98 compiler are monadic and space-efficient.
-However, they do not use the standard do-notation, because in fact they
-are more general than the standard monad category.
+implementation of the nhc98 compiler are designed for space-efficiency.
+They were the first example of Applicative parsers (although the term
+was not known then), as opposed to Monadic parsers.
 
 <li>
 <a href="http://research.microsoft.com/~emeijer/Papers/Parsec.pdf">
-Daan Leijen's parsec.</a> The parsec library is widely used, since it is
-distributed with ghc.  Its combinators are fairly robust, but you need
-to place explicit backtracking into your parsers, using the <tt>try</tt>
-operator.  This can be tricky.
+Daan Leijen's parsec.</a> The parsec library is widely used, because it
+was once distributed with ghc.  Its combinators are fairly robust, but
+you need to place explicit backtracking into your parsers, using the
+<tt>try</tt> operator.  This can be tricky.
 
 <li><a href="http://www.cs.uu.nl/wiki/HUT/ParserCombinators">Doaitse
 Swierstra's UU_Parse.</a>
@@ -350,7 +348,7 @@ Allows on-line results, which is closely related to lazy parsing.
 
 <li><a href="http://cvs.haskell.org/Hugs/pages/libraries/base/Text-ParserCombinators-ReadP.html">Koen Claessen's ReadP.</a>
 This is a different proposed replacement for the standard Haskell'98
-Read class.  It is a whole lot more efficient that Read, but because it
+Read class.  It is a whole lot more efficient than Read, but because it
 is also API-compatible with Read, that unfortunately means it suffers
 from not giving good error messages.  Also, it requires rank-2 types,
 which is a non-Haskell'98 extension.

@@ -32,6 +32,7 @@ import Control.Applicative
 
 #ifdef __NHC__
 default (Integer,Double,[])	-- hack to avoid bizarre type defaulting error
+instance Commitment []
 instance PolyParse []
 #endif
 

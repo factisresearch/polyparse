@@ -43,15 +43,15 @@ newtype Parser s t a = P (P.Parser s t a)
 #ifdef __GLASGOW_HASKELL__
         deriving (Functor,Monad,Commitment)
 #else
-instance Functor (Parser t) where
+instance Functor (Parser s t) where
     fmap f (P p) = P (fmap f p)
-instance Monad (Parser t) where
+instance Monad (Parser s t) where
     return x  = P (return x)
     fail e    = P (fail e)
-    (P f) >>= (P g) = P (f >>= g)
-instance Commitment (Parser t) where
-    commit (P p)   = P (P.commit p)
-    (P p) `adjustErr` f  = P (p `P.adjustErr` f)
+    (P f) >>= g = P (f >>= (\(P g')->g') . g)
+instance Commitment (Parser s t) where
+    commit (P p)   = P (commit p)
+    (P p) `adjustErr` f  = P (p `adjustErr` f)
 #endif
 
 -- | Apply a parser to an input token sequence.

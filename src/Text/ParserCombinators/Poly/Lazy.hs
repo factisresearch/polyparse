@@ -43,10 +43,10 @@ instance Functor (Parser t) where
 instance Monad (Parser t) where
     return x  = P (return x)
     fail e    = P (fail e)
-    (P f) >>= (P g) = P (f >>= g)
+    (P f) >>= g = P (f >>= (\(P g')->g') . g)
 instance Commitment (Parser t) where
-    commit (P p)   = P (P.commit p)
-    (P p) `adjustErr` f  = P (p `P.adjustErr` f)
+    commit (P p)   = P (commit p)
+    (P p) `adjustErr` f  = P (p `adjustErr` f)
 #endif
 
 -- | Apply a parser to an input token sequence.

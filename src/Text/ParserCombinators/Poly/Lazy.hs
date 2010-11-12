@@ -14,6 +14,7 @@ module Text.ParserCombinators.Poly.Lazy
   , reparse	-- :: [t] -> Parser t ()
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base
+  , module Control.Applicative
   ) where
 
 import Text.ParserCombinators.Poly.Base

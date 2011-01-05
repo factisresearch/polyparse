@@ -32,8 +32,8 @@ module Text.Parse.ByteString
   , allAsString
   ) where
 
-import Char (isSpace,toLower,isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
-            ,ord,chr)
+import Char (isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
+            ,isSpace,isAlpha,isAlphaNum,ord,chr,toLower)
 import List (intersperse)
 import Ratio
 import qualified Data.ByteString.Lazy.Char8 as BS
@@ -58,7 +58,9 @@ type TextParser a = Parser a
 --   to some text, use @runParser@.
 class Parse a where
     -- | A straightforward parser for an item.  (A minimal definition of
-    --   a class instance requires either |parse| or |parsePrec|.)
+    --   a class instance requires either |parse| or |parsePrec|.  In general,
+    --   for a type that never needs parens, you should define |parse|, but
+    --   for a type that _may_ need parens, you should define |parsePrec|.)
     parse     :: TextParser a
     parse       = parsePrec 0
     -- | A straightforward parser for an item, given the precedence of
@@ -113,12 +115,83 @@ readsPrecByParsePrec p = \prec inp->
 
 -- | One lexical chunk (Haskell-style lexing).
 word :: TextParser String
+{-
 word = P (\s-> case lex (BS.unpack s) of
                    []         -> Failure s  ("no input? (impossible)")
                    [("","")]  -> Failure s ("no input?")
                    [("",_)]   -> Failure s  ("lexing failed?")
                    ((x,_):_)  -> Success (BS.drop (fromIntegral (length x)) s) x
          )
+-}
+word = P (p . BS.dropWhile isSpace)
+  where
+    p s | BS.null s = Failure BS.empty "end of input"
+        | otherwise =
+      case (BS.head s, BS.tail s) of
+        ('\'',t) -> let (P lit) = parseLitChar in fmap show (lit s)
+        ('\"',t) -> let (str,rest) = BS.span (not . (`elem` "\\\"")) t
+                    in litString ('\"': BS.unpack str) rest
+        ('0',s) -> case BS.uncons s of
+                     Just ('x',r) -> Success t ("0x"++BS.unpack ds)
+                                            where (ds,t) = BS.span isHexDigit r
+                     Just ('X',r) -> Success t ("0X"++BS.unpack ds)
+                                            where (ds,t) = BS.span isHexDigit r
+                     Just ('o',r) -> Success t ("0o"++BS.unpack ds)
+                                            where (ds,t) = BS.span isOctDigit r
+                     Just ('O',r) -> Success t ("0O"++BS.unpack ds)
+                                            where (ds,t) = BS.span isOctDigit r
+                     _ -> lexFracExp ('0': BS.unpack ds) t
+                                            where (ds,t) = BS.span isDigit s
+        (c,s) | isIdInit c -> let (nam,t) = BS.span isIdChar s in
+                                                   Success t (c: BS.unpack nam)
+              | isDigit  c -> let (ds,t)  = BS.span isDigit s in
+                                                 lexFracExp (c: BS.unpack ds) t
+              | isSingle c -> Success s (c:[])
+              | isSym    c -> let (sym,t) = BS.span isSym s in
+                                                   Success t (c: BS.unpack sym)
+              | otherwise  -> Failure (BS.cons c s) ("Bad character: "++show c)
+
+    isSingle c  =  c `elem` ",;()[]{}`"
+    isSym    c  =  c `elem` "!@#$%&*+./<=>?\\^|:-~"
+    isIdInit c  =  isAlpha c || c == '_'
+    isIdChar c  =  isAlphaNum c || c `elem` "_'"
+
+    lexFracExp acc s = case BS.uncons s of
+                           Just ('.',s') ->
+                               case BS.uncons s' of
+                                   Just (d,s'') | isDigit d ->
+                                        let (ds,t) = BS.span isDigit s'' in
+                                        lexExp (acc++'.':d: BS.unpack ds) t
+                                   _ -> lexExp acc s'
+                           _ -> lexExp acc s
+
+    lexExp acc s = case BS.uncons s of
+        Just (e,s') | e `elem` "eE" ->
+                    case BS.uncons s' of
+                        Just (sign,dt)
+                            | sign `elem` "+-" ->
+                                  case BS.uncons dt of
+                                      Just (d,t) | isDigit d ->
+                                          let (ds,u) = BS.span isDigit t in
+                                          Success u (acc++'e': sign: d:
+                                                     BS.unpack ds)
+                            | isDigit sign ->
+                                  let (ds,u) = BS.span isDigit dt in
+                                  Success u (acc++'e': sign: BS.unpack ds)
+                        _ -> Failure s' ("missing +/-/digit "
+                                        ++"after e in float literal: "
+                                        ++show (acc++'e':"..."))
+        _ -> Success s acc
+
+    litString acc s = case BS.uncons s of
+        Nothing       -> Failure (BS.empty)
+                                 ("end of input in string literal "++acc)
+        Just ('\"',r) -> Success r (acc++"\"")
+        Just ('\\',r) -> case BS.uncons r of   -- "for vim
+                             Just ('\"',t) -> litString (acc++"\\\"") t
+                             _             -> litString (acc++"\\") r  -- "vim
+        Just (_,r)    -> error "Text.Parse.word(litString) - can't happen"
+
 
 -- | Ensure that the next input word is the given string.  (Note the input
 --   is lexed as haskell, so wordbreaks at spaces, symbols, etc.)
@@ -169,11 +242,16 @@ enumeration typ cs = oneOf (map (\c-> do { isWord (show c); return c }) cs)
 -- Instances for all the Standard Prelude types.
 
 -- Numeric types
+
+-- | For any numeric parser, permit a negation sign in front of it.
 parseSigned :: Real a => TextParser a -> TextParser a
 parseSigned p = do '-' <- next; commit (fmap negate p)
                 `onFail`
                 do p
 
+-- | Parse any (unsigned) Integral numeric literal.
+--   Needs a base, radix, isDigit predicate,
+--   and digitToInt converter, appropriate to the result type.
 parseInt :: (Integral a) => String ->
                             a -> (Char -> Bool) -> (Char -> Int) ->
                             TextParser a
@@ -182,6 +260,8 @@ parseInt base radix isDigit digitToInt =
                     return (foldl1 (\n d-> n*radix+d)
                                    (map (fromIntegral.digitToInt) cs))
                  `adjustErr` (++("\nexpected one or more "++base++" digits"))
+
+-- | Parse a decimal, octal, or hexadecimal (unsigned) Integral numeric literal.
 parseDec, parseOct, parseHex :: (Integral a) => TextParser a
 parseDec = parseInt "decimal" 10 Char.isDigit    Char.digitToInt
 parseOct = parseInt "octal"    8 Char.isOctDigit Char.digitToInt
@@ -199,20 +279,20 @@ parseUnsignedInteger = P (\bs -> case BS.uncons bs of
                                  _ -> Failure bs "parsing Integer: not a digit")
                `adjustErr` (++("\nexpected one or more decimal digits"))
 
-
+-- | Parse any (unsigned) Floating numeric literal, e.g. Float or Double.
 parseFloat :: (RealFrac a) => TextParser a
-parseFloat = do ds   <- many1 (satisfy isDigit)
+parseFloat = do ds   <- many1Satisfy isDigit
                 frac <- (do '.' <- next
-                            many (satisfy isDigit)
+                            manySatisfy isDigit
                               `adjustErrBad` (++"expected digit after .")
-                         `onFail` return [] )
+                         `onFail` return BS.empty )
                 exp  <- exponent `onFail` return 0
-                ( return . fromRational . (* (10^^(exp - length frac)))
+                ( return . fromRational . (* (10^^(exp - BS.length frac)))
                   . (%1) .  (\ (Right x)->x) . fst
-                  . runParser parseDec ) (BS.pack (ds++frac))
+                  . runParser parseDec ) (ds `BS.append` frac)
              `onFail`
-             do w <- many (satisfy (not.isSpace))
-                case map toLower w of
+             do w <- manySatisfy isAlpha
+                case map toLower (BS.unpack w) of
                   "nan"      -> return (0/0)
                   "infinity" -> return (1/0)
                   _          -> fail "expected a floating point number"
@@ -221,6 +301,7 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                               `onFail`
                               parseSigned parseDec )
 
+-- | Parse a Haskell character literal.
 parseLitChar :: TextParser Char
 parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
                   c <- next
@@ -327,15 +408,15 @@ parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
 -- Basic types
 instance Parse Int where
     parse = fmap fromInteger $	-- convert from Integer, deals with minInt
-              do many (satisfy isSpace); parseSigned parseUnsignedInteger
+              do manySatisfy isSpace; parseSigned parseUnsignedInteger
 instance Parse Integer where
-    parse = do many (satisfy isSpace); parseSigned parseUnsignedInteger
+    parse = do manySatisfy isSpace; parseSigned parseUnsignedInteger
 instance Parse Float where
-    parse = do many (satisfy isSpace); parseSigned parseFloat
+    parse = do manySatisfy isSpace; parseSigned parseFloat
 instance Parse Double where
-    parse = do many (satisfy isSpace); parseSigned parseFloat
+    parse = do manySatisfy isSpace; parseSigned parseFloat
 instance Parse Char where
-    parse = do many (satisfy isSpace); parseLitChar
+    parse = do manySatisfy isSpace; parseLitChar
 	-- not totally correct for strings...
     parseList = do { w <- word; if head w == '"' then return (init (tail w))
                                 else fail "not a string" }

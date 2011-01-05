@@ -8,6 +8,9 @@ module Text.ParserCombinators.Poly.ByteString
   , eof
   , satisfy
   , onFail
+    -- ** Derived parsers (but implemented more efficiently)
+  , manySatisfy
+  , many1Satisfy
     -- ** Re-parsing
   , reparse
     -- * Re-export all more general combinators
@@ -82,8 +85,8 @@ instance PolyParse Parser
 -- | Simply return the next token in the input tokenstream.
 next :: Parser Char
 next = P (\bs-> case BS.uncons bs of
-                Nothing -> Failure bs "Ran out of input (EOF)"
-                Just (c, bs') -> Success bs' c )
+                Nothing     -> Failure bs "Ran out of input (EOF)"
+                Just (h, t) -> Success t h )
 
 -- | Succeed if the end of file/input has been reached, fail otherwise.
 eof :: Parser ()
@@ -108,6 +111,18 @@ onFail :: Parser a -> Parser a -> Parser a
   where continue ts (Failure _ _) = q ts
     --  continue _  (Committed r) = r	-- no, remain Committed
         continue _  r             = r
+
+------------------------------------------------------------------------
+
+-- | @manySatisfy p@ is a more efficient fused version of @many (satisfy p)@
+manySatisfy :: (Char->Bool) -> Parser ByteString
+manySatisfy f = P (\bs-> let (pre,suf) = BS.span f bs in Success suf pre)
+
+-- | @many1Satisfy p@ is a more efficient fused version of @many1 (satisfy p)@
+many1Satisfy :: (Char->Bool) -> Parser ByteString
+many1Satisfy f = do x <- manySatisfy f
+                    if BS.null x then fail "Parse.many1Satisfy: failed"
+                                 else return x
 
 ------------------------------------------------------------------------
 

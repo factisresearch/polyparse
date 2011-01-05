@@ -32,6 +32,7 @@ library
         Text.ParserCombinators.Poly.StateParser,
         Text.ParserCombinators.Poly.State,
         Text.ParserCombinators.Poly.StateLazy,
+        Text.ParserCombinators.Poly.Lex,
         Text.Parse
   if impl(ghc)
     build-depends:	bytestring

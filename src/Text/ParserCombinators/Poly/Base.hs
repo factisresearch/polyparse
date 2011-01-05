@@ -25,7 +25,7 @@ module Text.ParserCombinators.Poly.Base
   , bracketSep	-- :: PolyParse p => p bra -> p sep -> p ket -> p a -> p [a]
   , bracket	-- :: PolyParse p => p bra -> p ket -> p a -> p a
   , manyFinally -- :: PolyParse p => p a -> p z -> p [a]
-  , terminated  -- :: PolyParse p => p a -> p z -> p [a]
+  , manyFinally'-- :: PolyParse p => p a -> p z -> p [a]
   ) where
 
 import Control.Applicative
@@ -188,8 +188,8 @@ bracket open close p = do
        ; p `discard` (close `adjustErrBad` ("Missing closing bracket:\n\t"++))
        }
 
--- | 'manyFinally e t' parses a possibly-empty sequence of e's,
---   terminated by a t.  The final t is discarded.  Any parse failures
+-- | @manyFinally e t@ parses a possibly-empty sequence of @e@'s,
+--   terminated by a @t@.  The final @t@ is discarded.  Any parse failures
 --   could be due either to a badly-formed terminator or a badly-formed
 --   element, so it raises both possible errors.
 manyFinally :: PolyParse p => p a -> p z -> p [a]
@@ -209,18 +209,19 @@ manyFinally p t =
        }
 -}
 
--- | 'terminated' is like 'manyFinally', except that in 'manyFinally e t',
---   the parser 't' is tried only when parser 'e' fails, whereas in
---   'terminated e t', the parser 't' is always tried first, then
---   parser 'e' only if the terminator is not found.  For instance,
---   'manyFinally (accept "01") (accept "0")' on input "0101010" returns
---   '["01","01","01"], whereas 'terminated' with the same arguments
---   and input returns '[]'.
-terminated :: PolyParse p => p a -> p z -> p [a]
-terminated p t =
+-- | @manyFinally'@ is like @manyFinally@, except when the terminator
+--   parser overlaps with the element parser.  In @manyFinally e t@,
+--   the parser @t@ is tried only when parser @e@ fails, whereas in
+--   @manyFinally' e t@, the parser @t@ is always tried first, then
+--   parser @e@ only if the terminator is not found.  For instance,
+--   @manyFinally (accept "01") (accept "0")@ on input @"0101010"@ returns
+--   @["01","01","01"]@, whereas @manyFinally'@ with the same arguments
+--   and input returns @[]@.
+manyFinally' :: PolyParse p => p a -> p z -> p [a]
+manyFinally' p t =
     (do t; return [])
       <|>
-    (do x <- p; return (x:) `apply` terminated p t)
+    (do x <- p; return (x:) `apply` manyFinally' p t)
       <|>
     oneOf' [ ("sequence terminator", do { t; return [] } )
            , ("item in a sequence",  do { p; return [] } )

@@ -36,9 +36,12 @@ library
         Text.Parse
   if impl(ghc)
     build-depends:	bytestring
+--  build-depends:	 text
     exposed-modules:
         Text.ParserCombinators.Poly.ByteString,
         Text.Parse.ByteString
+--      Text.ParserCombinators.Poly.Text,
+--      Text.Parse.Text
   cpp-options:		-DVERSION="1.5"
   nhc98-options:	-K6M
   extensions:		CPP

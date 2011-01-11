@@ -131,7 +131,7 @@ many1Satisfy f = do x <- manySatisfy f
 --   user-parser recognises a macro use, it can lookup the macro
 --   expansion from the parse state, lex it, and then stuff the
 --   lexed expansion back down into the parser.
-reparse    :: ByteString -> Parser ()
+reparse    :: Text -> Parser ()
 reparse ts  = P (\inp-> Success (ts `T.append` inp) ())
 
 ------------------------------------------------------------------------

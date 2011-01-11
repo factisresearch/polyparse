@@ -13,13 +13,10 @@ module Text.ParserCombinators.Poly.Base
   , indent	-- :: Int -> String -> String
     -- ** Choices
   , oneOf	-- :: PolyParse p => [p a] -> p a
-  , optional	-- :: PolyParse p => p a -> p (Maybe a)
     -- ** Sequences
   , exactly	-- :: PolyParse p => Int -> p a -> p [a]
   , upto	-- :: PolyParse p => Int -> p a -> p [a]
-  , many	-- :: PolyParse p => p a -> p [a]
   , many1	-- :: PolyParse p => p a -> p [a]
-  , some	-- :: PolyParse p => p a -> p [a]
   , sepBy	-- :: PolyParse p => p a -> p sep -> p [a]
   , sepBy1	-- :: PolyParse p => p a -> p sep -> p [a]
   , bracketSep	-- :: PolyParse p => p bra -> p sep -> p ket -> p a -> p [a]

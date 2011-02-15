@@ -15,6 +15,7 @@ module Text.ParserCombinators.Poly.Text
   , reparse
     -- * Re-export all more general combinators
   , module Text.ParserCombinators.Poly.Base
+  , module Control.Applicative
   ) where
 
 

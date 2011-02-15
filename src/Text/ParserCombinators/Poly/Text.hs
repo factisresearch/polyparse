@@ -26,7 +26,7 @@ import Control.Applicative
 
 -- | This @Parser@ datatype is a specialised parsing monad with error
 --   reporting.  Whereas the standard version can be used for arbitrary
---   token types, this version is specialised to ByteString input only.
+--   token types, this version is specialised to Text input only.
 newtype Parser a = P (Text -> Result Text a)
 
 -- | Apply a parser to an input token sequence.

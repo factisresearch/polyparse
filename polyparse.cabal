@@ -41,6 +41,7 @@ library
         Text.ParserCombinators.Poly.ByteString,
         Text.Parse.ByteString
 --      Text.ParserCombinators.Poly.Text,
+--      Text.ParserCombinators.Poly.StateText,
 --      Text.Parse.Text
   cpp-options:		-DVERSION="1.5"
   nhc98-options:	-K6M

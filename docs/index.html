@@ -138,6 +138,9 @@ a <tt>commit</tt>.
      no need to import these modules directly.
 <li> <b>Text.ParserCombinators.Poly.ByteString</b>  is a specialised
      version of the Poly parser for ByteString input only.
+<li> <b>Text.ParserCombinators.Poly.Text</b><br>
+     <b>Text.ParserCombinators.Poly.StateText</b>
+     are specialised versions of the Poly parser for Data.Text input only.
 <li> <b>Text.ParserCombinators.Poly.Lex</b>  is a specialised
      version of the Poly parser for iteratee-style tokeniser input.
 <li> <b>Text.ParserCombinators.HuttonMeijer</b>  The most venerable of all
@@ -215,20 +218,23 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
+polyparse-1.6, release date 2011.05.22<br>
+By HTTP:
+<a href="http://code.haskell.org/polyparse/polyparse-1.6.tar.gz">.tar.gz</a>,
+<a href="http://code.haskell.org/polyparse/polyparse-1.6.zip">.zip</a>.
+
+<p>
+<b>Older versions:</b><br>
 polyparse-1.5, release date 2011.01.07<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.5.tar.gz">.tar.gz</a>,
 <a href="http://code.haskell.org/polyparse/polyparse-1.5.zip">.zip</a>.
-
-<p>
-<b>Older versions:</b><br>
+<br>
 polyparse-1.4.1, release date 2010.05.29<br>
 By HTTP:
 <a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.1.tar.gz">.tar.gz</a>,
 <a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.1.zip">.zip</a>.
 <br>
-<p>
-<b>Older versions:</b><br>
 polyparse-1.4, release date 2009.12.10<br>
 By HTTP:
 <a href="http://www.cs.york.ac.uk/fp/polyparse/polyparse-1.4.tar.gz">.tar.gz</a>,
@@ -291,6 +297,9 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+
+<p>Version 1.6 exposes a Data.Text variant of the parser combinators,
+based loosely on the ByteString variant.
 
 <p>
 Version 1.5 has a reasonably large internal API change - moving lots of

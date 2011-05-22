@@ -1,5 +1,5 @@
 SOFTWARE = polyparse
-VERSION  = 1.5
+VERSION  = 1.6
 
 CPP      = cpp -traditional
 #CPP     = cpphs --text 	# useful e.g. on MacOS X
@@ -19,6 +19,8 @@ SRCS = \
 	src/Text/ParserCombinators/Poly/State.hs \
 	src/Text/ParserCombinators/Poly/StateLazy.hs \
 	src/Text/ParserCombinators/Poly/ByteString.hs \
+	src/Text/ParserCombinators/Poly/Text.hs \
+	src/Text/ParserCombinators/Poly/StateText.hs \
 	src/Text/Parse.hs \
 	src/Text/Parse/ByteString.hs
 

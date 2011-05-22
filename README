@@ -47,5 +47,7 @@ What this package contains:
 	State		The instance for strict polymorphic parsers with state.
 	StateLazy	The instance for lazy polymorphic parsers with state.
 	ByteString	An experimental instance for parsing from ByteString.
+	Text		An experimental instance for parsing from Data.Text.
+	StateText	An experimental instance for parsing from Data.Text.
 
 ----

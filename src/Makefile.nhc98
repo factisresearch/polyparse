@@ -1,5 +1,5 @@
 THISPKG	= polyparse
-VERSION = 1.5
+VERSION = 1.6
 SEARCH	= -package base
 EXTRA_H_FLAGS   = -K6M -DVERSION=$(VERSION)
 EXTRA_HBC_FLAGS = -H50M -A4M
@@ -23,6 +23,8 @@ SRCS	= \
 
 #	Text/Parse/ByteString.hs \
 #	Text/ParserCombinators/Poly/ByteString.hs \
+#	Text/ParserCombinators/Poly/Text.hs \
+#	Text/ParserCombinators/Poly/StateText.hs \
 
 
 # Here are the main rules.

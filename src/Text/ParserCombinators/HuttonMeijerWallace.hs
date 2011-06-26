@@ -53,8 +53,8 @@ module Text.ParserCombinators.HuttonMeijerWallace
   , reparse
   ) where
 
-import Char
-import Monad
+import Data.Char
+import Control.Monad
 
 infixr 5 +++
 

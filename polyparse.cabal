@@ -19,7 +19,7 @@ cabal-version:  >=1.2
 
 library
   hs-source-dirs:	src
-  build-depends:	base <= 6, haskell98
+  build-depends:	base <= 6
   exposed-modules:
         Text.ParserCombinators.HuttonMeijer,
         Text.ParserCombinators.HuttonMeijerWallace,

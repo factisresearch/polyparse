@@ -32,10 +32,10 @@ module Text.Parse.ByteString
   , allAsString
   ) where
 
-import Char (isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
-            ,isSpace,isAlpha,isAlphaNum,ord,chr,toLower)
-import List (intersperse)
-import Ratio
+import Data.Char as Char (isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
+                         ,isSpace,isAlpha,isAlphaNum,ord,chr,toLower)
+import Data.List (intersperse)
+import Data.Ratio
 import qualified Data.ByteString.Lazy.Char8 as BS
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Text.ParserCombinators.Poly.ByteString

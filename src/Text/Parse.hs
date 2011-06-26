@@ -29,10 +29,10 @@ module Text.Parse
   , allAsString
   ) where
 
-import Char (isSpace,toLower,isUpper,isDigit,isOctDigit,isHexDigit,digitToInt
-            ,isAlpha,isAlphaNum,ord,chr)
-import List (intersperse)
-import Ratio
+import Data.Char as Char (isSpace,toLower,isUpper,isDigit,isOctDigit
+                         ,isHexDigit,digitToInt,isAlpha,isAlphaNum,ord,chr)
+import Data.List (intersperse)
+import Data.Ratio
 import Text.ParserCombinators.Poly
 
 ------------------------------------------------------------------------

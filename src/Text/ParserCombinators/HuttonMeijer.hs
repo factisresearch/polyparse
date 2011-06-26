@@ -34,8 +34,8 @@ module Text.ParserCombinators.HuttonMeijer
     letter, alphanum, string, ident, nat, int, spaces, comment, junk,
     skip, token, natural, integer, symbol, identifier) where
 
-import Char
-import Monad
+import Data.Char
+import Control.Monad
 
 infixr 5 +++
 

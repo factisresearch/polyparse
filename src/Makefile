@@ -1,5 +1,5 @@
 SOFTWARE = polyparse
-VERSION = 1.7
+VERSION = 1.8
 
 LIBSRCS = \
 	Text/ParserCombinators/HuttonMeijer.hs \
@@ -14,6 +14,7 @@ LIBSRCS = \
         Text/ParserCombinators/Poly/State.hs \
         Text/ParserCombinators/Poly/StateLazy.hs \
         Text/ParserCombinators/Poly/ByteString.hs \
+        Text/ParserCombinators/Poly/ByteStringChar.hs \
         Text/ParserCombinators/Poly/Text.hs \
         Text/ParserCombinators/Poly/StateText.hs \
 	Text/Parse.hs \

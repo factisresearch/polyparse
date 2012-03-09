@@ -136,8 +136,9 @@ a <tt>commit</tt>.
      hierarchy (e.g. T.P.Poly.Lazy etc).  Every individual variation
      re-exports the base combinators, and base types, so there should be
      no need to import these modules directly.
-<li> <b>Text.ParserCombinators.Poly.ByteString</b>  is a specialised
-     version of the Poly parser for ByteString input only.
+<li> <b>Text.ParserCombinators.Poly.ByteString</b><br>
+     <b>Text.ParserCombinators.Poly.ByteStringChar</b>  are specialised
+     versions of the Poly parser for ByteString input only.
 <li> <b>Text.ParserCombinators.Poly.Text</b><br>
      <b>Text.ParserCombinators.Poly.StateText</b>
      are specialised versions of the Poly parser for Data.Text input only.
@@ -218,13 +219,18 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
+polyparse-1.8, release date 2012.03.09<br>
+By HTTP:
+<a href="http://code.haskell.org/polyparse/polyparse-1.8.tar.gz">.tar.gz</a>,
+<a href="http://code.haskell.org/polyparse/polyparse-1.8.zip">.zip</a>.
+
+<p>
+<b>Older versions:</b><br>
 polyparse-1.7, release date 2011.06.26<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.7.tar.gz">.tar.gz</a>,
 <a href="http://code.haskell.org/polyparse/polyparse-1.7.zip">.zip</a>.
-
-<p>
-<b>Older versions:</b><br>
+<br>
 polyparse-1.6, release date 2011.05.22<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.6.tar.gz">.tar.gz</a>,
@@ -302,6 +308,9 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+
+<p>Version 1.8 fixes the ByteString API to return Word8 instead of Char,
+   whilst retaining the old API as ByteStringChar.
 
 <p>Version 1.7 fixes imports for forward compatibility with ghc-7.
 

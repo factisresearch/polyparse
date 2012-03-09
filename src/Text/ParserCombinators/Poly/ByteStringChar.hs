@@ -1,4 +1,4 @@
-module Text.ParserCombinators.Poly.ByteString
+module Text.ParserCombinators.Poly.ByteStringChar
   ( -- * The Parser datatype
     Parser(P)
   , Result(..)
@@ -20,10 +20,9 @@ module Text.ParserCombinators.Poly.ByteString
 
 import Text.ParserCombinators.Poly.Base
 import Text.ParserCombinators.Poly.Result
-import qualified Data.ByteString.Lazy as BS
-import Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as BS
+import Data.ByteString.Lazy.Char8 (ByteString)
 import Control.Applicative
-import Data.Word
 
 -- | This @Parser@ datatype is a specialised parsing monad with error
 --   reporting.  Whereas the standard version can be used for arbitrary
@@ -84,7 +83,7 @@ instance PolyParse Parser
 ------------------------------------------------------------------------
 
 -- | Simply return the next token in the input tokenstream.
-next :: Parser Word8
+next :: Parser Char
 next = P (\bs-> case BS.uncons bs of
                 Nothing     -> Failure bs "Ran out of input (EOF)"
                 Just (h, t) -> Success t h )
@@ -96,7 +95,7 @@ eof = P (\bs -> if BS.null bs
                 else Failure bs "Expected end of input (EOF)" )
 
 -- | Return the next token if it satisfies the given predicate.
-satisfy :: (Word8 -> Bool) -> Parser Word8
+satisfy :: (Char -> Bool) -> Parser Char
 satisfy f = do { x <- next
                ; if f x then return x else fail "Parse.satisfy: failed"
                }
@@ -116,11 +115,11 @@ onFail :: Parser a -> Parser a -> Parser a
 ------------------------------------------------------------------------
 
 -- | @manySatisfy p@ is a more efficient fused version of @many (satisfy p)@
-manySatisfy :: (Word8->Bool) -> Parser ByteString
+manySatisfy :: (Char->Bool) -> Parser ByteString
 manySatisfy f = P (\bs-> let (pre,suf) = BS.span f bs in Success suf pre)
 
 -- | @many1Satisfy p@ is a more efficient fused version of @many1 (satisfy p)@
-many1Satisfy :: (Word8->Bool) -> Parser ByteString
+many1Satisfy :: (Char->Bool) -> Parser ByteString
 many1Satisfy f = do x <- manySatisfy f
                     if BS.null x then fail "Parse.many1Satisfy: failed"
                                  else return x

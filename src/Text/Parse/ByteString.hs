@@ -26,7 +26,7 @@ module Text.Parse.ByteString
   , parseFloat
   , parseLitChar
     -- ** Re-export all the more general combinators from Poly too
-  , module Text.ParserCombinators.Poly.ByteString
+  , module Text.ParserCombinators.Poly.ByteStringChar
     -- ** ByteStrings and Strings as whole entities
   , allAsByteString
   , allAsString
@@ -38,7 +38,7 @@ import Data.List (intersperse)
 import Data.Ratio
 import qualified Data.ByteString.Lazy.Char8 as BS
 import Data.ByteString.Lazy.Char8 (ByteString)
-import Text.ParserCombinators.Poly.ByteString
+import Text.ParserCombinators.Poly.ByteStringChar
 
 ------------------------------------------------------------------------
 -- $parser

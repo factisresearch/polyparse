@@ -43,12 +43,14 @@ instance Monad Parser where
     (P f) >>= g  = P (continue . f)
       where
         continue (Success ts x)             = let (P g') = g x in g' ts
-        continue (Committed (Committed r))  = continue (Committed r)
         continue (Committed r)              = Committed (continue r)
         continue (Failure ts e)             = Failure ts e
 
 instance Commitment Parser where
-    commit (P p)         = P (Committed . p)
+    commit (P p)         = P (Committed . squash . p)
+      where
+        squash (Committed r) = squash r
+        squash r             = r
     (P p) `adjustErr` f  = P (adjust . p)
       where
         adjust (Failure z e) = Failure z (f e)

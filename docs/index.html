@@ -219,13 +219,18 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
+polyparse-1.9, release date 2013.05.15<br>
+By HTTP:
+<a href="http://code.haskell.org/polyparse/polyparse-1.9.tar.gz">.tar.gz</a>,
+<a href="http://code.haskell.org/polyparse/polyparse-1.9.zip">.zip</a>.
+
+<p>
+<b>Older versions:</b><br>
 polyparse-1.8, release date 2012.03.09<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.8.tar.gz">.tar.gz</a>,
 <a href="http://code.haskell.org/polyparse/polyparse-1.8.zip">.zip</a>.
-
-<p>
-<b>Older versions:</b><br>
+<br>
 polyparse-1.7, release date 2011.06.26<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.7.tar.gz">.tar.gz</a>,
@@ -308,6 +313,11 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+
+<p>Version 1.9 changes the semantics of Text.Parse.bracket, now allowing
+   backtracking if the closing bracket parser fails.  If you want the old
+   behaviour, you can add a "commit" to the closing bracket parser at the
+   use-site.
 
 <p>Version 1.8 fixes the ByteString API to return Word8 instead of Char,
    whilst retaining the old API as ByteStringChar.

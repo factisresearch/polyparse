@@ -179,10 +179,14 @@ bracketSep open sep close p =
        }
 
 -- | Parse a bracketed item, discarding the brackets.
+--   If everything matches /except/ the closing bracket, the whole
+--   parse fails soft, which can give less-than-satisfying error messages.
+--   If you want better error messages, try calling with e.g.
+--     @bracket open (commit close) item@
 bracket :: PolyParse p => p bra -> p ket -> p a -> p a
 bracket open close p = do
     do { open    `adjustErr` ("Missing opening bracket:\n\t"++)
-       ; p `discard` (close `adjustErrBad` ("Missing closing bracket:\n\t"++))
+       ; p `discard` (close `adjustErr` ("Missing closing bracket:\n\t"++))
        }
 
 -- | @manyFinally e t@ parses a possibly-empty sequence of @e@'s,

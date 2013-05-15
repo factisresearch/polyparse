@@ -6,7 +6,7 @@ The module Text.ParserCombinators.HuttonMeijerWallace is
     (c) copyright 1998-2000    Malcolm Wallace
 The modules Text.ParserCombinators.Poly* and Text.Parse and Text.Parse.*
 are
-    (c) copyright 2006-2011    Malcolm Wallace
+    (c) copyright 2006-2013    Malcolm Wallace
 
 These modules are licensed under the terms of the GNU Lesser
 General Public Licence (LGPL), which can be found in the file called

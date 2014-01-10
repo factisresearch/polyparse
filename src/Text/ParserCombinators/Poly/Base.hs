@@ -194,13 +194,18 @@ bracket open close p = do
 --   could be due either to a badly-formed terminator or a badly-formed
 --   element, so it raises both possible errors.
 manyFinally :: PolyParse p => p a -> p z -> p [a]
+{-
+-- This implementation is incorrect.  If at least one item has been
+-- parsed, but the terminator is missing, then this erroneously succeeds
+-- returning the empty list.
 manyFinally p t =
     (many p `discard` t)
       <|>
     oneOf' [ ("sequence terminator", do { t; return [] } )
            , ("item in a sequence",  do { p; return [] } )
            ]
-{-
+-}
+
 manyFinally p t =
     do { xs <- many p
        ; oneOf' [ ("sequence terminator", do { t; return () } )
@@ -208,7 +213,6 @@ manyFinally p t =
                 ]
        ; return xs
        }
--}
 
 -- | @manyFinally'@ is like @manyFinally@, except when the terminator
 --   parser overlaps with the element parser.  In @manyFinally e t@,

@@ -222,14 +222,45 @@ manyFinally p t =
 --   @manyFinally (accept "01") (accept "0")@ on input @"0101010"@ returns
 --   @["01","01","01"]@, whereas @manyFinally'@ with the same arguments
 --   and input returns @[]@.
+{-
 manyFinally' :: PolyParse p => p a -> p z -> p [a]
 manyFinally' p t =
-    (do t; return [])
-      <|>
-    (do x <- p; return (x:) `apply` manyFinally' p t)
-      <|>
-    oneOf' [ ("sequence terminator", do { t; return [] } )
-           , ("item in a sequence",  do { p; return [] } )
+    oneOf' [ ( "terminator in a manyFinally' sequence"
+             , do t; return []
+             )
+           , ( "item in a manyFinally' sequence"
+             , do x <- p; return (x:) `apply` manyFinally' p t
+             )
            ]
+--  (do t; return [])
+--    <|>
+--  (do x <- p `adjustErr`
+--             (("In manyFinally', when expecting an item in the sequence: ")++)
+--      return (x:) `apply` manyFinally' p t)
+--    <|>
+--    (do x <- p; return (x:) `apply` manyFinally' p t)
+--      <|>
+--  (do t `adjustErr`
+--             (("In manyFinally', when expecting the sequence terminator: ")++)
+--      fail "stop")
+--  oneOf' [ ("sequence terminator", do { t; fail "stop" } )
+--         , ("item in a sequence",  do { fmap (:[]) p } )
+--         ]
+-}
+
+manyFinally' :: (PolyParse p, Show a) => p a -> p z -> p [a]
+manyFinally' p t = fmap reverse $ go []
+  where
+    go acc = oneOf' [ ( "terminator in a manyFinally' sequence"
+                      , do t; return []
+                      )
+                    , ( "item in a manyFinally' sequence"
+                      , do x <- p; go (x: acc)
+                      )
+                    ]
+             `adjustErr`
+             (("After successful partial sequence "++show (reverse acc)
+                                                   ++",\n")++)
+
 
 ------------------------------------------------------------------------

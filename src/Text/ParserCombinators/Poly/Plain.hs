@@ -7,6 +7,7 @@ module Text.ParserCombinators.Poly.Plain
   , next	-- :: Parser t t
   , eof		-- :: Parser t ()
   , satisfy	-- :: (t->Bool) -> Parser t t
+  , satisfyMsg	-- :: (t->Bool) -> String -> Parser t t
   , onFail	-- :: Parser t a -> Parser t a -> Parser t a
 
     -- ** Re-parsing

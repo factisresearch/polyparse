@@ -10,6 +10,7 @@ module Text.ParserCombinators.Poly.Parser
   , next	-- :: Parser t t
   , eof		-- :: Parser t ()
   , satisfy	-- :: (t->Bool) -> Parser t t
+  , satisfyMsg	-- :: Show t => (t->Bool) -> String -> Parser t t
   , onFail      -- :: Parser t a -> Parser t a -> Parser t a
 
     -- ** Re-parsing
@@ -96,6 +97,16 @@ eof  = P (\ts-> case ts of
 satisfy :: (t->Bool) -> Parser t t
 satisfy pred = do { x <- next
                   ; if pred x then return x else fail "Parse.satisfy: failed"
+                  }
+
+-- | Return the next token if it satisfies the given predicate.  The
+--   String argument describes the function, for better error messages.
+satisfyMsg :: Show t => (t->Bool) -> String -> Parser t t
+satisfyMsg pred s
+             = do { x <- next
+                  ; if pred x then return x
+                              else fail $ "Parse.satisfy ("++s++") ("
+                                                           ++show x++"): failed"
                   }
 
 ------------------------------------------------------------------------

@@ -8,6 +8,7 @@ module Text.ParserCombinators.Poly.Lazy
   , next	-- :: Parser t t
   , eof		-- :: Parser t ()
   , satisfy	-- :: (t->Bool) -> Parser t t
+  , satisfyMsg	-- :: (t->Bool) -> String -> Parser t t
   , onFail      -- :: Parser t a -> Parser t a -> Parser t a
 
     -- ** Re-parsing
@@ -94,6 +95,11 @@ eof     = P P.eof
 -- | Return the next token if it satisfies the given predicate.
 satisfy :: (t->Bool) -> Parser t t
 satisfy = P . P.satisfy
+
+-- | Return the next token if it satisfies the given predicate.  The String
+--   argument describes the predicate for better error messages.
+satisfyMsg :: (t->Bool) -> String -> Parser t t
+satisfyMsg p s = P (P.satisfyMsg p s)
 
 -- | @p `onFail` q@ means parse p, unless p fails, in which case
 --   parse q instead.

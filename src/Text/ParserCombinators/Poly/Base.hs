@@ -249,10 +249,10 @@ manyFinally' p t =
 -}
 
 manyFinally' :: (PolyParse p, Show a) => p a -> p z -> p [a]
-manyFinally' p t = fmap reverse $ go []
+manyFinally' p t = go []
   where
     go acc = oneOf' [ ( "terminator in a manyFinally' sequence"
-                      , do t; return []
+                      , do t; return (reverse acc)
                       )
                     , ( "item in a manyFinally' sequence"
                       , do x <- p; go (x: acc)

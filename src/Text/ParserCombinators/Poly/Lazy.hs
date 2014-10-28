@@ -98,7 +98,7 @@ satisfy = P . P.satisfy
 
 -- | Return the next token if it satisfies the given predicate.  The String
 --   argument describes the predicate for better error messages.
-satisfyMsg :: (t->Bool) -> String -> Parser t t
+satisfyMsg :: Show t => (t->Bool) -> String -> Parser t t
 satisfyMsg p s = P (P.satisfyMsg p s)
 
 -- | @p `onFail` q@ means parse p, unless p fails, in which case

@@ -11,6 +11,7 @@ module Text.Parse.ByteString
     -- ** Combinators specific to bytestring input, lexed haskell-style
   , word	-- :: TextParser String
   , isWord	-- :: String -> TextParser ()
+  , literal	-- :: String -> TextParser ()
   , optionalParens	-- :: TextParser a -> TextParser a
   , parens	-- :: Bool -> TextParser a -> TextParser a
   , field	-- :: Parse a => String -> TextParser a
@@ -199,6 +200,14 @@ isWord :: String -> TextParser String
 isWord w = do { w' <- word
               ; if w'==w then return w else fail ("expected "++w++" got "++w')
               }
+
+-- | Ensure that the next input word is the given string.  (No
+--   lexing, so mixed spaces, symbols, are accepted.)
+literal :: String -> TextParser String
+literal w = do { w' <- exactly (length w) next
+               ; if w'==w then return w
+                          else fail ("expected "++w++" got "++w')
+               }
 
 -- | Allow optional nested string parens around an item.
 optionalParens :: TextParser a -> TextParser a

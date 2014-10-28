@@ -219,13 +219,17 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
+polyparse-1.10, release date 2014.10.28<br>
+By HTTP:
+<a href="http://hackage.haskell.org/package/polyparse">Hackage</a>,
+
+<p>
+<b>Older versions:</b><br>
 polyparse-1.9, release date 2013.05.15<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.9.tar.gz">.tar.gz</a>,
 <a href="http://code.haskell.org/polyparse/polyparse-1.9.zip">.zip</a>.
-
-<p>
-<b>Older versions:</b><br>
+<br>
 polyparse-1.8, release date 2012.03.09<br>
 By HTTP:
 <a href="http://code.haskell.org/polyparse/polyparse-1.8.tar.gz">.tar.gz</a>,
@@ -313,6 +317,13 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+
+<p>Version 1.10 adds a new text combinator "literal", as a replacement for
+   "isWord", when the string to be accepted should not be lexed as Haskell,
+   for instance if it contains spaces or mixed alpha/symbols.
+   Also fixes the implementation of "manyFinally", and adds a new
+   combinator "satisfyMsg" which has a string describing the predicate,
+   in order to produce more informative error messages.
 
 <p>Version 1.9 changes the semantics of Text.Parse.bracket, now allowing
    backtracking if the closing bracket parser fails.  If you want the old

@@ -1,5 +1,5 @@
 SOFTWARE = polyparse
-VERSION = 1.8
+VERSION = 1.10
 
 LIBSRCS = \
 	Text/ParserCombinators/HuttonMeijer.hs \

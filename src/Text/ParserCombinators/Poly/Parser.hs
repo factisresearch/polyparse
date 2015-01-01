@@ -17,9 +17,9 @@ module Text.ParserCombinators.Poly.Parser
   , reparse	-- :: [t] -> Parser t ()
   ) where
 
-
 import Text.ParserCombinators.Poly.Base
 import Text.ParserCombinators.Poly.Result
+import Control.Applicative
 
 -- | This @Parser@ datatype is a fairly generic parsing monad with error
 --   reporting.  It can be used for arbitrary token types, not just
@@ -30,6 +30,13 @@ newtype Parser t a = P ([t] -> Result [t] a)
 instance Functor (Parser t) where
     fmap f (P p) = P (fmap f . p)
 
+instance Applicative (Parser t) where
+    pure f    = return f
+    pf <*> px = do { f <- pf; x <- px; return (f x) }
+#if defined(GLASGOW_HASKELL) && GLASGOW_HASKELL > 610
+    p  <*  q  = p `discard` q
+#endif
+
 instance Monad (Parser t) where
     return x     = P (\ts-> Success ts x)
     fail e       = P (\ts-> Failure ts e)
@@ -38,6 +45,12 @@ instance Monad (Parser t) where
         continue (Success ts x)             = let (P g') = g x in g' ts
         continue (Committed r)              = Committed (continue r)
         continue (Failure ts e)             = Failure ts e
+
+instance Alternative (Parser t) where
+    empty     = fail "no parse"
+    p <|> q   = p `onFail` q
+
+instance PolyParse (Parser t)
 
 instance Commitment (Parser t) where
     commit (P p)         = P (Committed . squash . p)

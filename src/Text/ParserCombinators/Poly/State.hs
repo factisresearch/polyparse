@@ -34,17 +34,4 @@ runParser (P p) = \s-> reTuple . resultToEither . p s
   where
     reTuple (either, (z,s)) = (either, s, z)
 
-instance Applicative (Parser s t) where
-    pure f    = return f
-    pf <*> px = do { f <- pf; x <- px; return (f x) }
-#if defined(GLASGOW_HASKELL) && GLASGOW_HASKELL > 610
-    p  <*  q  = p `discard` q
-#endif
-
-instance Alternative (Parser s t) where
-    empty     = fail "no parse"
-    p <|> q   = p `onFail` q
-
-instance PolyParse (Parser s t)
-
 ------------------------------------------------------------------------

@@ -35,6 +35,7 @@ module Text.ParserCombinators.HuttonMeijer
     skip, token, natural, integer, symbol, identifier) where
 
 import Data.Char
+import Control.Applicative ( Applicative(pure,(<*>)), Alternative(empty,(<|>)) )
 import Control.Monad
 
 infixr 5 +++
@@ -50,6 +51,10 @@ instance Functor Parser where
    -- map         :: (a -> b) -> (Parser a -> Parser b)
    fmap f (P p)    = P (\inp -> [(f v, out) | (v,out) <- p inp])
 
+instance Applicative Parser where
+   pure  = return
+   (<*>) = ap
+
 instance Monad Parser where
    -- return      :: a -> Parser a
    return v        = P (\inp -> [(v,inp)])
@@ -59,6 +64,10 @@ instance Monad Parser where
 
    -- fail        :: String -> Parser a
    fail _          = P (\_ -> [])
+
+instance Alternative Parser where
+   empty = mzero
+   (<|>) = mplus
 
 instance MonadPlus Parser where
    -- mzero       :: Parser a

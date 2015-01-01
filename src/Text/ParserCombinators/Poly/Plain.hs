@@ -29,17 +29,4 @@ import Control.Applicative
 runParser :: Parser t a -> [t] -> (Either String a, [t])
 runParser (P p) = resultToEither . p
 
-instance Applicative (Parser t) where
-    pure f    = return f
-    pf <*> px = do { f <- pf; x <- px; return (f x) }
-#if defined(GLASGOW_HASKELL) && GLASGOW_HASKELL > 610
-    p  <*  q  = p `discard` q
-#endif
-
-instance Alternative (Parser t) where
-    empty     = fail "no parse"
-    p <|> q   = p `onFail` q
-
-instance PolyParse (Parser t)
-
 ------------------------------------------------------------------------

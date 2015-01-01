@@ -22,6 +22,13 @@ mechanism to modify or replace the Library and relink (clauses 6a,
 complied with.
 ----
 
+If you have a commercial use for polyparse, and feel that even the terms
+of the LGPL (as relaxed above) are too onerous, you have the option of
+distributing unmodified binaries (only, not sources) under the terms of
+a different licence (see LICENCE-commercial).
+
+----
+
 This library is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU

@@ -2,6 +2,7 @@ name:		polyparse
 version:	1.11
 license:	LGPL
 license-file:	COPYRIGHT
+copyright:	(c) 2006-2015 Malcolm Wallace
 author:		Malcolm Wallace <Malcolm.Wallace@me.com>
 maintainer:	author
 homepage:	http://code.haskell.org/~malcolm/polyparse/
@@ -15,7 +16,12 @@ description:
 	replacement for the standard Read class, for better
 	deserialisation of Haskell values from Strings.
 build-type:	Simple
-cabal-version:  >=1.2
+cabal-version:  >=1.6
+extra-source-files: LICENCE-LGPL, LICENCE-commercial
+
+source-repository head
+  type:     darcs
+  location: http://code.haskell.org/polyparse
 
 library
   hs-source-dirs:	src

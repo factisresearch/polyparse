@@ -24,6 +24,7 @@ module Text.Parse
   , parseHex
   , parseFloat
   , parseLitChar
+  , parseLitChar'
     -- ** Re-export all the more general combinators from Poly too
   , module Text.ParserCombinators.Poly
     -- ** Strings as whole entities
@@ -107,14 +108,16 @@ word = P p
   where
     p ""       = Failure "" "end of input"
     p (c:s)    | isSpace c = p (dropWhile isSpace s)
-    p ('\'':s) = let (P lit) = parseLitChar in fmap show (lit ('\'':s))
+    p ('\'':s) = let (P lit) = parseLitChar' in fmap show (lit ('\'':s))
     p ('"':s)  = lexString "\"" s
              where lexString acc ('"':s)      = Success s (reverse ('"':acc))
-                   lexString acc ('\\':'"':s) = lexString ("\"\\"++acc) s
-                   lexString acc (c:s)        = lexString (c:acc) s
                    lexString acc []           = Failure [] ("end of input in "
                                                            ++"string literal "
                                                            ++acc)
+                   lexString acc s = let (P lit) = parseLitChar
+                                     in case lit s of
+                                          Failure a b -> Failure a b
+                                          Success t c -> lexString (c:acc) t
     p ('0':'x':s) = Success t ('0':'x':ds) where (ds,t) = span isHexDigit s
     p ('0':'X':s) = Success t ('0':'X':ds) where (ds,t) = span isHexDigit s
     p ('0':'o':s) = Success t ('0':'o':ds) where (ds,t) = span isOctDigit s
@@ -262,15 +265,22 @@ parseFloat = do ds   <- many1 (satisfy isDigit)
                               `onFail`
                               parseSigned parseDec )
 
+-- | Parse a Haskell character literal, including the surrounding single quotes.
+parseLitChar' :: TextParser Char
+parseLitChar' = do '\'' <- next `adjustErr` (++"expected a literal char")
+                   char <- parseLitChar
+                   '\'' <- next `adjustErrBad` (++"literal char has no final '")
+                   return char
+
+-- | Parse a Haskell character literal, excluding the surrounding single quotes.
 parseLitChar :: TextParser Char
-parseLitChar = do '\'' <- next `adjustErr` (++"expected a literal char")
-                  c <- next
+parseLitChar = do c <- next
                   char <- case c of
                             '\\' -> next >>= escape
                             '\'' -> fail "expected a literal char, got ''"
                             _    -> return c
-                  '\'' <- next `adjustErrBad` (++"literal char has no final '")
                   return char
+
   where
     escape 'a'  = return '\a'
     escape 'b'  = return '\b'
@@ -381,7 +391,7 @@ instance Parse Double where
     parse = do many (satisfy isSpace); parseSigned parseFloat
 instance Parse Char where
 --  parse = parseByRead "Char"
-    parse = do many (satisfy isSpace); parseLitChar
+    parse = do many (satisfy isSpace); parseLitChar'
  -- parse = do { w <- word; if head w == '\'' then readLitChar (tail w)
  --                                           else fail "expected a char" }
  -- parseList = bracket (isWord "\"") (satisfy (=='"'))

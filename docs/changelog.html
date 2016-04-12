@@ -13,6 +13,18 @@
 </center>
 <hr>
 
+<h3>Changes in polyparse-1.12</h3>
+<p>
+<ul>
+<li>Version 1.12 contains a fix for lexing escaped chars inside a literal string
+   in the "word" parser.  It also changes the semantics of "parseLitChar" so
+   that it no longer expects surrounding single quotes.  A version that does
+   consume surrounding single quotes is now provided under the name
+   parseLitChar'.  The new behaviour of parseLitChar matches Haskell's
+   lexLitChar specification, from which it was derived.
+</ul>
+
+
 <h3>Changes in polyparse-1.11</h3>
 <p>
 <ul>

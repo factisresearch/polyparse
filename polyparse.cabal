@@ -1,8 +1,8 @@
 name:		polyparse
-version:	1.11
+version:	1.12
 license:	LGPL
 license-file:	COPYRIGHT
-copyright:	(c) 2006-2015 Malcolm Wallace
+copyright:	(c) 2006-2016 Malcolm Wallace
 author:		Malcolm Wallace <Malcolm.Wallace@me.com>
 maintainer:	author
 homepage:	http://code.haskell.org/~malcolm/polyparse/
@@ -50,6 +50,6 @@ library
         Text.ParserCombinators.Poly.Text
         Text.ParserCombinators.Poly.StateText
 --      Text.Parse.Text
-  cpp-options:		-DVERSION="1.11"
+  cpp-options:		-DVERSION="1.12"
   nhc98-options:	-K6M
   extensions:		CPP

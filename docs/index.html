@@ -219,12 +219,16 @@ Please edit the wiki if you discover any nice tricks!
 
 <p>
 <b>Current released version:</b><br>
-polyparse-1.11, release date 2015.01.01<br>
+polyparse-1.12, release date 2016.04.12<br>
 By HTTP:
 <a href="http://hackage.haskell.org/package/polyparse">Hackage</a>,
 
 <p>
 <b>Older versions:</b><br>
+polyparse-1.11, release date 2015.01.01<br>
+By HTTP:
+<a href="http://hackage.haskell.org/package/polyparse">Hackage</a>.
+<br>
 polyparse-1.10, release date 2014.10.28<br>
 By HTTP:
 <a href="http://hackage.haskell.org/package/polyparse">Hackage</a>.
@@ -321,6 +325,13 @@ add the option <tt>-package polyparse</tt> to your compiler commandline
 
 <hr>
 <center><h3><a name="news">Recent news</a></h3></center>
+
+<p>Version 1.12 contains a fix for lexing escaped chars inside a literal string
+   in the "word" parser.  It also changes the semantics of "parseLitChar" so
+   that it no longer expects surrounding single quotes.  A version that does
+   consume surrounding single quotes is now provided under the name
+   parseLitChar'.  The new behaviour of parseLitChar matches Haskell's
+   lexLitChar specification, from which it was derived.
 
 <p>Version 1.11 contains only a fix for the Applicative/Monad/Functor
    classes rearrangement in ghc-7.10.*
